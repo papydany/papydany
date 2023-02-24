@@ -98,7 +98,16 @@
                        <td>{{$u->phone}}</td>
                        <td>{{$u->email}}</td>
                        </tr>
-                       
+                       <tr>
+                            <th colspan="2">Specialization</th>
+                              <th colspan="2">Jamb Reg</th>
+                              
+                          </tr>
+                          <tr>
+                      <td colspan="2">{{$u->specialization_id}}</td>
+                       <td colspan="2">{{$u->jamb_reg}}</td>
+                      
+                       </tr>              
                           </table>
                         </div>
 <div class="col-sm-2">
@@ -107,6 +116,7 @@
 
   <p><a href="{{url('edit_matric_number',$u->id)}}" class="btn   btn-primary btn-block" target="_blank"> Edit Matric Number</a> </p>
   <p><a href="{{url('edit_profile',$u->id)}}" class="btn   btn-warning btn-block" target="_blank"> Edit Profile </a> </p>
+  <p><a href="{{url('edit_jamb_reg',$u->id)}}" class="btn   btn-danger btn-block" target="_blank"> Edit Jamb Reg Number</a> </p>
   
   <p><a href="{{url('resetStudentPassword',$u->id)}}" class="btn   btn-success btn-block"> Reset Student Password </a> </p>
  

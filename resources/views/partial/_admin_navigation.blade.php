@@ -72,7 +72,10 @@
                
             </li>
                    
-                   
+            <li>
+                <a href="{{url('registeredCoursesToStudentsII')}}"><i class="fa fa-fw fa-edit"></i>Register Courses To  Students II</a>
+               
+            </li>    
 
                    
                 </ul>
@@ -123,6 +126,24 @@
                 <a href="{{url('withdrawalOldportal')}}"><i class="fa fa-fw fa-edit"></i>Withdrawal (Oldportal)</a>
                
             </li>
+            <li>
+                <a href="javascript:;" data-toggle="collapse" data-target="#demo22a"><i class="fa fa-fw fa-table"></i>Enable Department For Upload<i class="fa fa-fw fa-caret-down"></i></a>
+                <ul id="demo22a" class="collapse">
+                    <li>
+                    <a href="{{url('enableResultDepartment')}}"><i class="fa fa-fw fa-edit"></i>Create</a>
+                    </li>
+                    <li>
+                    <a href="{{url('viewEnableResultDepartment')}}"><i class="fa fa-fw fa-edit"></i>View </a>
+                    </li>
+                    <li>
+                    <a href="{{url('enableResultDepartmentOld')}}"><i class="fa fa-fw fa-edit"></i>Create(old portal)</a>
+                    </li>
+                    <li>
+                    <a href="{{url('viewEnableResultDepartmentOld')}}"><i class="fa fa-fw fa-edit"></i>View (pld portal)</a>
+                    </li>
+                </ul>
+            </li>
+          
 
 @elseif($result->name =="admin" || $result->name =="support")  
 @if($result->name =="support")
@@ -135,7 +156,9 @@
                     <li>
                         <a href="{{url('regLog')}}">registration log</a>
                     </li>
-                   
+                    <li>
+                        <a href="{{url('mopUpWithCALog')}}">mopup with Ca log</a>
+                    </li>
                 </ul>
             </li>
             @endif
@@ -422,7 +445,7 @@
              <li>
                 <a href="javascript:;" data-toggle="collapse" data-target="#demo4"><i class="fa fa-fw fa-edit"></i>Student<i class="fa fa-fw fa-caret-down"></i></a>
                 <ul id="demo4" class="collapse">
-                <li>
+               <li>
                     <a href="{{url('new_student')}}">New Student</a>
                     </li>
                     <li>
@@ -438,6 +461,9 @@
                     </li>
                     <li>
                     <a href="{{url('studentsWithOnlyProfile')}}">Outstanding Student</a>
+                    </li>
+                   <li>
+                    <a href="{{url('studentsWithOnlyFirstSemester')}}" >Outstanding Second Semester</a>
                     </li>
                 </ul>
             </li>

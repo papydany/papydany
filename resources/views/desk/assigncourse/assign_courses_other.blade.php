@@ -316,12 +316,12 @@
                       <div class="form-group col-sm-12 col-sm-offset-3">
  
                         <button type="submit" class="btn btn-danger btn-lg ">
-                                    <i class="fa fa-btn fa-user"></i> Assig Courses
+                                    <i class="fa fa-btn fa-user"></i> Assign Courses
                                 </button>
                                 </div>
                                 </form>
                        @else
-                        <p class="alert alert-warning">No Department  is avalable</p>
+                        <p class="alert alert-warning">No Department  is available</p>
                         @endif
                         @endif
                     

@@ -2,6 +2,9 @@
 
 {{!!$e = 0}}
 <table>
+    <tr><th colspan="2">Title</th>
+    <th colspan="5">{{$title}}</th></tr>
+    <tr><th>Code</th><th colspan="5">{{$code}}</th></tr>
             <tr>
                 <th>#</th>
                 <th>MatricNo</th>
@@ -10,8 +13,7 @@
                 <th>EXAM</th>
                 <th>TOTAL</th>
                 <th>Grade</th>
-               <th>{{$title}}</th>
-                <th>{{$code}}</th>
+               
             </tr>
                            
                       @foreach($user as $v)

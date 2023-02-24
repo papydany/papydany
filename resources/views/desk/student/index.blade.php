@@ -42,7 +42,7 @@
                             <select class="form-control" name="session" required>
                                 <option value=""> - - Select - -</option>
 
-                                @for ($year = (date('Y')); $year >= 2009; $year--)
+                                @for ($year = 2019; $year >= 2009; $year--)
                                     {{!$yearnext =$year+1}}
                                     <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
                                 @endfor
@@ -93,15 +93,15 @@
                         </div>
 
                         <div class="form-group">
-                         <div class="col-sm-4">
+                         <div class="col-sm-3">
                               <label for="Course_title" class=" control-label">Email</label>
                                 <input type="text" class="form-control" name="email" value="{{ old('email') }}">
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-3">
                               <label for="Course_title" class=" control-label">Phone</label>
                                 <input type="text" class="form-control" name="phone" value="{{ old('phone') }}">
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-3">
                             <label for="Course_title" class=" control-label">Gender</label>
                               <select class="form-control" name="gender"> 
                               <option value="">Select Gender</option>
@@ -109,6 +109,10 @@
                                   <option value="female">female</option>
                                   <option></option>
                               </select>
+                            </div>
+                            <div class="col-sm-3">
+                              <label for="Course_title" class=" control-label">Jamb Reg</label>
+                                <input type="text" class="form-control" name="jamb_reg" value="{{ old('jamb_reg') }}">
                             </div>
 </div>
 <div class="form-group">

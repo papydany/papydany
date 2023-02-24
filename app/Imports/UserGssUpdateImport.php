@@ -29,7 +29,6 @@ class UserGssUpdateImport implements ToCollection, SkipsEmptyRows, WithHeadingRo
         return [
             'matricno' => [
                 'required',
-                'string',
             ],
         ];
     }
@@ -59,12 +58,12 @@ class UserGssUpdateImport implements ToCollection, SkipsEmptyRows, WithHeadingRo
               ->join('course_regs', 'course_regs.user_id', '=', 'users.id')
               ->where([['course_regs.period', $period],['course_id',$course_id],['session',$session]])
               ->whereIn('registercourse_id',$register_course_id)
-             
-              ->orderBy('users.matric_number', 'ASC')
+             ->orderBy('users.matric_number', 'ASC')
               ->select('course_regs.*','users.matric_number', 'users.entry_year')
               ->get();
-             
+              
               return $this->user;
+              
     }
 
 
@@ -115,23 +114,23 @@ class UserGssUpdateImport implements ToCollection, SkipsEmptyRows, WithHeadingRo
                         }
                       $grade_value = $this->get_grade($total);
                     $grade = $grade_value['grade'];
-                     $cp = $this->mm($grade, $this->unit);
+                     $cp = $this->mm($grade,$v->course_unit);
                      // check for update
-            $check = StudentResult::where([['course_id', $v->course_id], ['coursereg_id', $v->coursereg_id], ['user_id', $v->user_id]])->first();
+            $check = StudentResult::where([['course_id', $v->course_id], ['coursereg_id', $v->id], ['user_id', $v->user_id]])->first();
 
                  // update back table if records exist
                  if ($check != null) {
                    
                      $check->grade = $grade;
-                     $check->cp = $cp;
+                     $check->cp = $cp['cp'];
                      $check->ca = $ca;
                      $check->exam = $exam;
-                      $check->total=$total;
+                     $check->total=$total;
                      $check->save();
                  }else{
                     
                     $insert_data[] =['user_id' => $v->user_id, 'matric_number' => $v->matric_number, 'scriptNo' => $scriptno, 'course_id' => $v->course_id, 'coursereg_id' => $v->id, 'ca' => $ca, 'exam' => $exam, 'total' => $total, 'grade' => $grade,
-                     'cu' => $this->unit, 'cp' => $cp['cp'], 'level_id' => $this->l,
+                     'cu' =>$v->course_unit, 'cp' => $cp['cp'], 'level_id' =>$v->level_id,
                     'session' => $v->session, 'semester' => $v->semester_id, 'status' => 0, 'season' => $v->period, 'flag' => $flag, 'examofficer' => Auth::user()->id, 'post_date'=>$date,'approved' => 0];
                  }
                 }

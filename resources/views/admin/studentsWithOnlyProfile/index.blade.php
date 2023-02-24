@@ -25,7 +25,7 @@
                          
                           @if(count($u))
                  
-                          <form class="form-horizontal" role="form" method="POST" action="{{ url('/tranferStudents') }}" data-parsley-validate>
+                          <form class="form-horizontal" role="form" method="POST" action="{{ url('/transferStudents') }}" data-parsley-validate>
                         {{ csrf_field() }}
 
                           <table class="table table-bordered table-striped">
@@ -127,6 +127,14 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-user"></i>Transfer Students
                                 </button>
+
+                            </div>
+                            <div class="col-md-2">
+                            <br/>
+                                <button type="submit" class="btn btn-danger" name="delete" value="delete">
+                                    <i class="fa fa-btn fa-user"></i>Delete Student
+                                </button>
+                                
                             </div>
 
                         </div>

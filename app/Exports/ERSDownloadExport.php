@@ -16,16 +16,22 @@ class ERSDownloadExport implements FromView,ShouldAutoSize,WithStyles
     */
     
         private $user;
-        
+      
+        private $id;
+        private $s;
+        private $season;
+        private $course_id;
+        private $fos_id,$department,$faculty,$semester,$code,$title,$result;
+        private $userId=array();
         public function __construct(array $request,$registercourse,$department,$faculty)
         {
             $this->id = $request['id'];
-            $this->l = $request['level'];
+           // $this->l = $request['level'];
             $this->s = $request['session'];
            $this->season=$request['period'];
             
            $s =$this->s;
-            $l =$this->l;
+          
             $ss =$this->season;
          
             $this->course_id =$registercourse->course_id;
@@ -37,11 +43,17 @@ class ERSDownloadExport implements FromView,ShouldAutoSize,WithStyles
             $this->semester =$registercourse->semester_id;
             $this->faculty =$faculty;
             $this->department =$department;
-
+            $this->result=DB::connection('mysql2')->table('student_results')->where([['course_id',$this->course_id],['session',$s],['season',$ss]])->get();
+            foreach($this->result as $v)
+            {
+             $this->userId[]=$v->user_id;
+            }
             $this->user = DB::connection('mysql2')->table('course_regs')
             ->join('users', 'course_regs.user_id', '=', 'users.id')
             ->where('users.fos_id', $this->fos_id)
             ->where([['course_regs.period', $ss],['course_regs.session', $s], ['course_regs.course_id',$this->course_id]])
+            ->whereNotIn('users.id',$this->userId)
+            ->orderBy('course_regs.level_id', 'ASC')
             ->orderBy('users.matric_number', 'ASC')
             ->select('users.id', 'users.firstname', 'users.surname', 'users.othername', 'users.matric_number')
             ->get();  

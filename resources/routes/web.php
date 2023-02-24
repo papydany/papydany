@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MoppedUpController;
+use App\Http\Controllers\StudentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,8 +31,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');*/
 
 Route::get('/clear', function() {
-   
-    $exitCode = Artisan::call('optimize:clear');
+   $exitCode = Artisan::call('optimize:clear');
    $exitCode = Artisan::call('clear-compiled');
     return '<h1>Cache facade value cleared</h1>';
 });
@@ -40,7 +40,9 @@ require __DIR__.'/auth.php';
 //========================== report=======================
 Route::post('registeredCourseToStudent', [ReportController::class,'postRegisteredCourseToStudent']);
 Route::get('registeredCourseToStudent', [ReportController::class,'registeredCourseToStudent']);
-
+Route::post('registeredCoursesToStudentsIII', [ReportController::class,'postRegisteredCoursesToStudentsIII']);
+Route::post('registeredCoursesToStudentsII', [ReportController::class,'postRegisteredCoursesToStudentsII']);
+Route::get('registeredCoursesToStudentsII', [ReportController::class,'registeredCoursesToStudentsII']);
 Route::get('apiwithoutkey', [SupportController::class, 'apiWithoutKey'])->name('apiWithoutKey');
 Route::get('asc', [SupportController::class, 'asc'])->name('asc');
 
@@ -57,9 +59,10 @@ Route::get('displayResultTable', [SupportController::class,'displayResultTable']
 //Reoptimized class loader:
 // change tfc to tms
 //Route::get('autoAssignCourse', [SupportController::class,'autoAssignCourse']);
-//Route::get('updateCourse2', [SupportController::class,'updateCourse2']);
+Route::get('updateCourse5', [SupportController::class,'updateCourse5']);
 Route::post('studentImport', [SupportController::class,'studentImport']);
 Route::get('updateCourse3', [SupportController::class,'updateCourse3']);
+Route::get('updateCourse4/{id}', [SupportController::class,'updateCourse4']);
 Route::get('updateCourse', [SupportController::class,'updateCourse']);
 Route::get('updateRegisterCourseTable', [SupportController::class,'updateRegisterCourseTable']);
 Route::get('changeTFCtoTMS', [SupportController::class,'changeTFCtoTMS']);
@@ -97,6 +100,11 @@ Route::get('edit_matric_number/{id}', [GeneralController::class,'edit_matric_num
 Route::post('edit_matric_number', [GeneralController::class,'post_edit_matric_number'])->middleware(['roles:admin,support,Deskofficer,,,']);
 Route::post('updateMatricNo', [GeneralController::class,'updateMatricNo'])->middleware(['roles:admin,support,Deskofficer,examsofficer,,']);
 
+// edit jamb Reg
+Route::get('edit_jamb_reg/{id}', [GeneralController::class,'edit_jamb_reg'])->middleware(['roles:admin,support,Deskofficer,,,']);
+Route::post('edit_jamb_reg', [GeneralController::class,'post_edit_jamb_reg'])->middleware(['roles:admin,support,Deskofficer,,,']);
+//Route::post('updateMatricNo', [GeneralController::class,'updateMatricNo'])->middleware(['roles:admin,support,Deskofficer,examsofficer,,']);
+
 // edit students profile
 Route::get('edit_profile/{id}', [GeneralController::class,'edit_profile'])->middleware(['roles:admin,support,Deskofficer,,,']);
 Route::post('edit_profile', [GeneralController::class,'post_edit_profile'])->middleware(['roles:admin,support,Deskofficer,,,']);
@@ -131,6 +139,7 @@ Route::post('getRegCourse', [SupportController::class,'getRegCourse'])->middlewa
 Route::get('update_email/{id}', [HomeController::class,'update_email']);
 Route::post('update_email', [HomeController::class,'post_update_email']);
 /*===================================contact ===============================================*/
+
 Route::get('studentsWithOnlyProfile', [HomeController::class,'studentsWithOnlyProfile'])->middleware(['roles:admin,support,Deskofficer,,']);
 Route::get('contactMail', [HomeController::class,'contactMail'])->middleware(['roles:admin,support,,,']);
 Route::post('replyemail', [HomeController::class,'replyemail'])->middleware(['roles:admin,support,,,']);
@@ -156,7 +165,7 @@ Route::get('get_lecturer_4_exams_officer', [HomeController::class,'get_lecturer_
 Route::post('assign_exams_officer', [HomeController::class,'assign_exams_officer'])->middleware(['roles:admin,support,Deskofficer,,']);
 Route::get('view_assign_exams_officer', [HomeController::class,'view_exams_officer'])->middleware(['roles:admin,support,Deskofficer,,']);
 Route::get('remove_exams_officer/{id}', [HomeController::class,'remove_exams_officer'])->middleware(['roles:admin,support,Deskofficer,,']);
-Route::get('detail_exams_officer/{id}', [HomeController::class,'detail_exams_officer'])->middleware(['roles:admin,support,,,']);
+Route::get('detail_exams_officer/{id}', [HomeController::class,'detail_exams_officer'])->middleware(['roles:admin,support,Deskofficer,,']);
 Route::get('remove_fos/{id}', [HomeController::class,'remove_fos'])->middleware(['roles:admin,support,,,']);
 
 /*===================================student detail ===============================================*/
@@ -248,7 +257,9 @@ Route::get('/suspend/{id}/{e?}', [ HomeController::class,'suspend'])->middleware
 Route::get('/assign_deskofficer/{e}', [ HomeController::class,'assign_Deskofficer,,,,'])->middleware(['roles:admin,support,,,']);
 Route::post('assign_deskofficer', [ HomeController::class,'post_assign_Deskofficer,,,,'])->middleware(['roles:admin,support,,,']);
 Route::get('resultReport/{id}/{d}', [ HomeController::class,'resultReport'])->middleware(['roles:support,,,,']);
-Route::get('resultReport1/{id}', [ HomeController::class,'resultReport1'])->middleware(['roles:support,,,,']);
+Route::get('resultReport1/{id}/{s}/{l}', [ HomeController::class,'resultReport2']);
+
+
 //----------------------------------------------------------------------------------------------------------------
 // predegree  create officer 
 Route::get('pds_new_desk_officer', [ HomeController::class,'pds_new_desk_officer'])->middleware(['roles:admin,support,,,']);
@@ -283,8 +294,9 @@ Route::get('deleteRegistration/{id}', [ HomeController::class,'deleteRegistratio
 Route::get('edit_course_unit/{id}', [ HomeController::class,'edit_course_unit'])->middleware(['roles:admin,support,Deskofficer,,,']);
 Route::post('update_course_unit', [ HomeController::class,'update_course_unit'])->middleware(['roles:admin,support,Deskofficer,,,']);
 
-Route::get('classAttendance/{id}/{s}/{d}/{fos}/{l}/{semester}', [ HomeController::class,'classAttendance']);
+Route::get('classAttendance/{id}/{s}/{d}/{fos}/{semester}', [ HomeController::class,'classAttendance']);
 Route::get('mopUpClassAttendance/{id}/{s}/{d}/{fos}/{l}/{semester}', [ MoppedUpController::class,'mopUpClassAttendance']);
+Route::get('classAttendanceSoft/{id}/{s}/{d}/{fos}/{semester}', [ HomeController::class,'classAttendanceSoft']);
 
 //-----------       add course to students ---------------------------------
 Route::get('add_adminreg_course/{id}/{s}/{yes?}', [ HomeController::class,'add_adminreg_course'])->middleware(['roles:admin,support,Deskofficer,,,']);
@@ -322,7 +334,7 @@ Route::get('view_assign_course', [ DeskController::class,'view_assign_course'])-
 Route::post('view_assign_course', [ DeskController::class,'get_view_assign_course'])->middleware(['roles:Deskofficer,admin,support,DVC,HOD,']);
 Route::get('print_assign_course', [ DeskController::class,'print_assign_course'])->middleware(['roles:Deskofficer,,,,']);
 Route::post('print_assign_course', [ DeskController::class,'get_print_assign_course'])->middleware(['roles:Deskofficer,,,,']);
-Route::get('remove_assign_course/{id}', [ DeskController::class,'remove_assign_course'])->middleware(['roles:Deskofficer,admin,support,,,']);
+Route::get('remove_assign_course/{id}', [ DeskController::class,'remove_assign_course'])->middleware(['roles:Deskofficer,admin,support,HOD,,']);
 Route::post('delete_multiple_course', [ DeskController::class,'delete_multiple_course'])->middleware(['roles:Deskofficer,,,,']);
 Route::post('remove_multiple_assign_course', [ DeskController::class,'remove_multiple_assign_course'])->middleware(['roles:Deskofficer,admin,support,,,']);
 
@@ -398,6 +410,7 @@ Route::post('excel_insert_result', [ DeskController::class,'excel_insert_result'
 Route::get('resultUploadRight', [ DeskController::class,'resultUploadRight'])->middleware(['roles:Deskofficer,examsofficer,lecturer,HOD,,,']);
 Route::post('uploadRight', [ DeskController::class,'uploadRight'])->middleware(['roles:Deskofficer,examsofficer,lecturer,HOD,,,']);
 Route::post('excel_insert_result_gss', [ DeskController::class,'excel_insert_result_gss'])->middleware(['roles:Deskofficer,examsofficer,lecturer,HOD,,,']);
+Route::post('excel_insert_result_gssII', [ DeskController::class,'excel_insert_result_gssII'])->middleware(['roles:Deskofficer,examsofficer,lecturer,HOD,,,']);
 
 
 // entering probation result per course
@@ -471,9 +484,9 @@ Route::post('coursesAndResultRatio', [ HomeController::class,'postCoursesAndResu
 //================== Exams Officer ===============================================
 
 
-
 Route::get('getfos/{id}',  [ExamofficerController::class,'getfos_hod'])->middleware(['roles:examsofficer,lecturer,HOD,,,']);
 
+Route::get('eo_result_c_gssII', [ExamofficerController::class,'eo_result_c_gssII'])->middleware(['roles:examsofficer,lecturer,HOD,,,']);
 
 Route::post('eo_assign_courses',  [ExamofficerController::class,'eo_assign_courses'])->middleware(['roles:examsofficer,lecturer,HOD,,,']);
 Route::get('eo_result_c_gss', [ExamofficerController::class,'eo_result_c_gss'])->middleware(['roles:examsofficer,lecturer,HOD,,,']);
@@ -529,9 +542,18 @@ Route::get('studentManagementAddCarryOverCourses', [ DeskController::class,'stud
 Route::get('getStudentManagementAddCarryOverCourse', [ DeskController::class,'getStudentManagementAddCarryOverCourse'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
 Route::post('postStudentManagementAddCarryOverCourse', [ DeskController::class,'postStudentManagementAddCarryOverCourse'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
 
+// repeat 2
+Route::get('studentManagementAddRepeatCourses2', [ DeskController::class,'studentManagementAddRepeatCourses2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
+Route::get('getStudentManagementAddRepeatCourse2', [ DeskController::class,'getStudentManagementAddRepeatCourse2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
+Route::post('postStudentManagementAddRepeatCourse2', [ DeskController::class,'postStudentManagementAddRepeatCourse2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
+
+// carryover2
+Route::get('studentManagementAddCarryOverCourses2', [ DeskController::class,'studentManagementAddCarryOverCourses2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
+Route::get('getStudentManagementAddCarryOverCourse2', [ DeskController::class,'getStudentManagementAddCarryOverCourse2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
+Route::post('postStudentManagementAddCarryOverCourse2', [ DeskController::class,'postStudentManagementAddCarryOverCourse2'])->middleware(['roles:Deskofficer,admin,support,examsofficer,HOD,']);
 
 //======================= transfer student==============================
-Route::post('tranferStudents', [ HomeController::class,'transferStudents'])->middleware(['roles:admin,support,Deskofficer,,']);
+Route::post('transferStudents', [ HomeController::class,'transferStudents'])->middleware(['roles:admin,support,Deskofficer,,']);
 
 //Auth::routes();
 Route::get('logout',[AuthenticatedSessionController::class,'destroy']);
@@ -557,3 +579,40 @@ Route::get('moppedUpRegisteredStudents', [MoppedUpController::class,'index']);
 Route::post('moppedUpRegisteredStudents', [MoppedUpController::class,'postMoppedUp']);
 Route::get('downloadMopUpERS/{id}/{d}', [MoppedUpController::class,'mopUpERS']);
 Route::get('downloadMopUpERS/{id}', [MoppedUpController::class,'mopUpERS2']);
+Route::get('downloadMopUpERS3', [MoppedUpController::class,'mopUpERS3']);
+Route::get('uploadMopUpResult/{id}/{d}', [MoppedUpController::class,'uploadMopUpResult'])->middleware(['roles:examsofficer,lecturer,HOD,Deskofficer,,']);
+Route::post('uploadMopUpResult', [MoppedUpController::class,'excelInsertMopUPResult'])->middleware(['roles:examsofficer,lecturer,HOD,Deskofficer,,']);
+Route::post('assignCoursesMopUp', [MoppedUpController::class,'assignCoursesMopUp'])->middleware(['roles:HOD,Deskofficer,,,,']);
+Route::get('viewMopUpResult/{id}/{d}', [MoppedUpController::class,'viewMopUpResult'])->middleware(['roles:examsofficer,lecturer,HOD,DVC,support']);
+Route::get('remove_mop_assign_course/{id}', [MoppedUpController::class,'removeMopAssignCourse'])->middleware(['roles:,,HOD,,,']);
+
+//=================================enable department for result================
+Route::get('enableResultDepartment', [GeneralController::class,'enableResultDepartment'])->middleware(['roles:DVC,,,,']);
+Route::post('enableResultDepartment', [GeneralController::class,'postEnableResultDepartment'])->middleware(['roles:DVC,,,,']);
+Route::post('updateEnableResultDepartment', [GeneralController::class,'updateEnableResultDepartment'])->middleware(['roles:DVC,,,,']);
+Route::get('viewEnableResultDepartment', [GeneralController::class,'viewEnableResultDepartment'])->middleware(['roles:DVC,,,,']);
+Route::post('viewEnableResultDepartment', [GeneralController::class,'reverseEnableResultDepartment'])->middleware(['roles:DVC,,,,']);
+
+
+//=================================enable department for result old================
+Route::get('enableResultDepartmentOld', [GeneralController::class,'enableResultDepartmentOld'])->middleware(['roles:DVC,,,,']);
+Route::post('enableResultDepartmentOld', [GeneralController::class,'postEnableResultDepartmentOld'])->middleware(['roles:DVC,,,,']);
+Route::post('updateEnableResultDepartmentOld', [GeneralController::class,'updateEnableResultDepartmentOld'])->middleware(['roles:DVC,,,,']);
+Route::get('viewEnableResultDepartmentOld', [GeneralController::class,'viewEnableResultDepartmentOld'])->middleware(['roles:DVC,,,,']);
+Route::post('viewEnableResultDepartmentOld', [GeneralController::class,'reverseEnableResultDepartmentOld'])->middleware(['roles:DVC,,,,']);
+Route::get('re', [HomeController::class,'re']);
+//=========================================student controller======================
+Route::get('studentsWithOnlyFirstSemester', [StudentController::class,'studentsWithOnlyFirstSemester'])->middleware(['roles:admin,support,Deskofficer,,']);
+Route::post('studentsWithOnlyFirstSemester', [StudentController::class,'postStudentsWithOnlyFirstSemester'])->middleware(['roles:admin,support,Deskofficer,,']);
+
+Route::get('changeJambRegToPassword/{entry_year}', [GeneralController::class,'changeJambRegToPassword']);
+Route::get('upd', [MoppedUpController::class,'upd']);
+
+//================================ log=================================
+Route::get('mopUpWithCALog', [MoppedUpController::class,'mopUpWithCALog']);
+Route::get('upRc/{s}/{fos}', [MoppedUpController::class,'upRc']);
+Route::get('usr', [SupportController::class,'usr']);
+Route::get('usrcr', [SupportController::class,'usrcr']);
+Route::get('probationSt', [SupportController::class,'probationSt']);
+//===========================duplicate name========================
+Route::get('duplicateName', [SupportController::class,'duplicateName']);

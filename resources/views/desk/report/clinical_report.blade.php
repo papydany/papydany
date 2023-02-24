@@ -79,36 +79,31 @@ $set['chr'] = array(1=>'<th class="s9 text-center">REPEAT RESULT</th>', 2=>'<th 
 $set['plus'] = 1;
 $set['wrong_fix'] = '';
 
-$set['bottom'] = '<p style="margin-left:0px">
-              <span>_______________________</span>
-              <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(HEAD OF DEPT)</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ...............................................</span>
-            </p>
-            <p> 
-              <span>______________________________</span>
+$set['bottom'] = '<p style="margin-left:10px">
+           
+              <span>___________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(DEAN OF '.strtoupper($fname).')</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: .............................................................</span>
+              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ....................................................................................</span>
             </p>
             <p> 
-              <span>_______________________</span>
+              <span>____________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(EXTERNAL EXAMINER)</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ..................................................</span>
+              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(PROVOST)</span>
+              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ..................................................................................</span>
             </p>
             
             <p> 
-              <span>___________________________</span>
+              <span>____________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(CHAIRMAN SBC)</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: .....................................................</span>
+              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ...............................................................................</span>
             </p>
             <p style="margin-right:0;"> 
           <br/><br/>
             <span style="color:#000; padding-left:3px; font-size:10px;" class="B"></span>
-            <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">Date of Senate Approval: .....................................................</span>
+            <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">Date of Senate Approval: ....................................................................</span>
           </p>'
             ;
 
@@ -136,7 +131,13 @@ $set['bottom'] = '<p style="margin-left:0px">
                               </div>
                               <div class="col-sm-3 ww" style="padding-left: 0px; padding-right: 0px; float: right;">
                                   {{!$next = $s + 1}}
-                                  <p> <strong>YEAR OF STUDY : </strong>{{$l.' / '.$duration}}</br>
+                                <?php  if($duration == 5){
+                                   $ll=$l-1;
+                                }else{
+                                 $ll=$l;
+                                }
+                                  ?>
+                                  <p> <strong>YEAR OF STUDY : </strong>{{$ll.' / '.$duration}}</br>
                                  <strong>SESSION : </strong>{{$s.' / '.$next}}</br>
                                   <strong>SEMESTER : </strong>FIRST & SECOND </p>
                               </div>

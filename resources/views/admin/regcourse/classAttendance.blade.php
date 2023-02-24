@@ -44,7 +44,6 @@ tr {
 
   </div>
   <div class="col-sm-4 floatRight30">
-      <p> <strong>Level : </strong>{{$l}}00 </p>
       <p><strong>Session : </strong>{{$s.' / '.$next}}</p>
        <p><strong>Semester : </strong>{{$semester->semester_name}} </p>
         
@@ -58,13 +57,13 @@ tr {
   
 </table>
 
-<?php $c = 0; ?>           
+<?php $c = 0; $b = 0;?>           
 
 @foreach($item as $k => $value) 
-
+<?php $b = ++$b; ?>
                  <table class="table table-bordered table-striped">
                    <tr>
-                     <th colspan="7">{{$k}}00 LEVEL &nbsp;&nbsp;&nbsp;  @if($k > $l) ( CARRY OVER STUDENTS ) @endif</th>
+                     <th colspan="7">{{$k}}00 LEVEL &nbsp;&nbsp;&nbsp;  @if($b > 1) ( CARRY OVER STUDENTS ) @endif</th>
                    </tr>
 
                  <tr>

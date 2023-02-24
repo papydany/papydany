@@ -108,7 +108,14 @@ $fosName =$r->get_fos($u->fos_id) ?>
                                     @foreach($item as  $v)
                                         
                                             <div class="col-sm-12" style="margin-bottom: 9px;">
-                                            <div class="col-sm-1" > <input type="checkbox" name="chk[]" value="{{$v->id}}"/></div>
+                                            <div class="col-sm-1" > 
+                                                @if($v->approved ==2)
+                                                 SBC Approved
+                                                @else
+                                                <input type="checkbox" name="chk[]" value="{{$v->id}}"/>
+                                                @endif
+                                                
+                                            </div>
                                             <div class="col-sm-2 text-center text-success" ><b>{{$v->course_code}}</b> </div>
                                             <div class="col-sm-1 text-center text-success" ><b>{{$v->level_id}}</b> </div>
                                             <div class="col-sm-1 text-center text-info" ><b>{{$v->course_status}}</b></div>
@@ -146,9 +153,10 @@ $fosName =$r->get_fos($u->fos_id) ?>
                                     </div>
                                     <div class="modal-footer">
                                             
-                                        <button type="submit" name="delete"  value="delete" class="btn btn-danger">delete Result</button>
+                                        <button type="submit" name="delete"  value="delete" class="btn btn-danger">Delete Course & Result</button>
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- 
+                                        <button type="submit" name="delete"  value="deleteResult" class="btn btn-primary">Delete Result</button>
+                                       
                                     
                                 </div>
                                 </div>

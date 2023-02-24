@@ -313,12 +313,18 @@ else
 { $c = 0;}
  $electiveSql1 =$R->register_course_elective($fos->id,$l,$s,1);
  $electiveSql2 =$R->register_course_elective($fos->id,$l,$s,2);
+ if($sfos == 0){
  $rccnirq =$R->registerCompulsaryCoursesNotInResultQuery($fos->id,$l,$s);
+ }else{
+ $rccnirq =$R->registerCompulsaryCoursesNotInResultQuerySpecialization($fos->id,$l,$s,$sfos);
+ }
+ //dd($rccnirq);
  $passedVacationCourseId =array();
 
  $totalElective = count($electiveSql1) + count($electiveSql2);
  
   ?> 
+
  @if(count($u) > 0)
  @if($approval == 1)
  <form class="form-horizontal" role="form" method="POST" action="{{ url('approveResult') }}" target="_blank" data-parsley-validate>
@@ -415,6 +421,8 @@ $totalElective,$passedVacationCourseId);
 @if(substr($remark,0,4) == 'PASS')
 @if($v->graduation_status == 1)
 <input type="checkbox" name="" value="" checked disabled />
+<input type="checkbox" name="rv[]" value="{{$v->id}}" />
+RV
 @else
 <input type="checkbox" name="graduate[]" class="ids" value="{{$v->id}}" />
 @endif
@@ -599,16 +607,19 @@ for($i=0; $i<$k; $i++) {
   
   </div>
   @elseif($approval == 2)
-  <div class="col-sm-12" style="border:2px solid #000; padding:4px" >
-  <div class="col-sm-4 col-sm-offset-1">
+  <div class="col-sm-12" style="border:2px solid #000; padding:10px" >
+  <div class="col-sm-3">
     <label for="birthday">Senate Approved Date</label>
   <input type="date" id="birthday" name="gd" class="form-control" required>
   </div>
-  <div class="col-sm-4 col-sm-offset-1"> 
+  <div class="col-sm-3 col-sm-offset-1"> 
   <button class="btn btn-primary ">Graduate Student</button>
-
-  </form>
   </div>
+  <div class="col-sm-3"> 
+  <button class="btn btn-danger" name="rev" value="rev">Reverse Graduate Student</button>
+  </div>
+  </form>
+  
   </div>
   @endif
   

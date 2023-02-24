@@ -9,11 +9,7 @@
       @if(isset($gsr))
        @if(count($gsr) > 0)
      <?php  $department = $r->get_departmetname($d);
-     $faculty = $r->get_facultymetname($f);
-           
-
- 
-                  ?>
+     $faculty = $r->get_facultymetname($f);?>
                            
 <table  class="table table-bordered">
 <tr><td>

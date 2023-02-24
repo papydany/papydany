@@ -133,7 +133,7 @@
                 
                          
                              <div class="col-sm-3">
-                              <label for="fos" class=" control-label">Field Of Study</label>
+                              <label for="fos" class="control-label">Field Of Study</label>
                               <select class="form-control" name="fos" required>
                                <option value=""> - - Select - -</option>
                                  
@@ -249,6 +249,12 @@
                               <br/>
                                 <button type="submit" class="btn btn-danger" name="ers" value="ers">
                                     <i class="fa fa-btn fa-user"></i> Excel ERS
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                              <br/>
+                                <button type="submit" class="btn btn-success" name="result" value="result">
+                                    <i class="fa fa-btn fa-user"></i> Excel Result Download
                                 </button>
                             </div>
 

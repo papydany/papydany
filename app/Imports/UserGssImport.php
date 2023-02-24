@@ -28,7 +28,6 @@ class UserGssImport implements ToCollection, SkipsEmptyRows, WithHeadingRow, Wit
         return [
             'matricno' => [
                 'required',
-                'string',
             ],
         ];
     }
@@ -131,10 +130,10 @@ class UserGssImport implements ToCollection, SkipsEmptyRows, WithHeadingRow, Wit
                             $grade_value = $this->get_grade($total);
                         
                         $grade = $grade_value['grade'];
-                     $cp = $this->mm($grade, $this->unit);
+                     $cp = $this->mm($grade, $v->course_unit);
                     
                     $insert_data[] =['user_id' => $v->user_id, 'matric_number' => $v->matric_number, 'scriptNo' => $scriptno, 'course_id' => $v->course_id, 'coursereg_id' => $v->id, 'ca' => $ca, 'exam' => $exam, 'total' => $total, 'grade' => $grade,
-                     'cu' => $this->unit, 'cp' => $cp['cp'], 'level_id' => $this->l,
+                     'cu' => $v->course_unit, 'cp' => $cp['cp'], 'level_id' =>$v->level_id,
                     'session' => $v->session, 'semester' => $v->semester_id, 'status' => 0, 'season' => $v->period, 'flag' => $flag, 'examofficer' => Auth::user()->id, 'post_date'=>$date,'approved' => 0];
                   
                 }
@@ -154,10 +153,10 @@ class UserGssImport implements ToCollection, SkipsEmptyRows, WithHeadingRow, Wit
                             $grade_value = $this->get_grade($total);
                         
                         $grade = $grade_value['grade'];
-                     $cp = $this->mm($grade, $this->unit);
+                     $cp = $this->mm($grade,$v->course_unit);
                     
                     $insert_data[] =['user_id' => $v->user_id, 'matric_number' => $v->matric_number, 'scriptNo' => $scriptno, 'course_id' => $v->course_id, 'coursereg_id' => $v->id, 'ca' => $ca, 'exam' => $exam, 'total' => $total, 'grade' => $grade,
-                     'cu' => $this->unit, 'cp' => $cp['cp'], 'level_id' => $this->l,
+                     'cu' =>$v->course_unit, 'cp' => $cp['cp'], 'level_id' =>$v->level_id,
                     'session' => $v->session, 'semester' => $v->semester_id, 'status' => 0, 'season' => $v->period, 'flag' => $flag, 'examofficer' => Auth::user()->id, 'post_date'=>$date,'approved' => 0];
                   
                 }

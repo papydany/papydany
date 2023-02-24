@@ -12,10 +12,11 @@ use App\Models\StudentResultBackup;
 use App\Models\Faculty;
 use App\Models\Department;
 use Illuminate\Support\Facades\Session;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade as PDF;
+use Illuminate\Support\Facades\Auth;
 use Hash;
 use App\Http\Traits\MyTrait;
+use App\Models\EnableResultUpload;
+use App\Models\ResultActivation;
 
 class GeneralController extends Controller
 {
@@ -53,7 +54,6 @@ class GeneralController extends Controller
         $old_matric_number  = $user->matric_number;
         $user->matric_number = $new_matric_number;
         $user->password = bcrypt($new_matric_number);
-        
         $user->save();
         
         // ==== updated result table
@@ -70,7 +70,7 @@ class GeneralController extends Controller
         
         
         
-           Session::flash('success',"SUCCESSFULL");
+           Session::flash('success',"SUCCESSFUL");
            return back();
     }
 
@@ -95,7 +95,7 @@ foreach($clean_list as $v)
 {
     $old = $v['old'];
     $new= $v['new'];
- User::on('mysql2')->where('matric_number',$old)->update(['matric_number' => $new]);
+ User::on('mysql2')->where('matric_number',$old)->update(['matric_number' => $new,'password'=>bcrypt($new)]);
     // ==== updated result table
     StudentResult::where('matric_number',$old)->update(['matric_number' => $new]);
 
@@ -108,13 +108,49 @@ foreach($clean_list as $v)
       
 }
 //dd();
-Session::flash('success',"SUCCESSFULL");
+Session::flash('success',"SUCCESSFUL");
            return back();
 }
 Session::flash('warning',"No records is updated, either you did not enter matric number to be updated  
 or matric number exist already.contact system ADMIN");
            return back();
     }
+
+    public function edit_jamb_reg($id)
+    {
+    $user =DB::connection('mysql2')->table('users')->find($id);
+   
+
+    if($user == null)
+    {
+        Session::flash('warning',"Students does not exist.");
+    
+    }
+    return view('general.edit.jamb_reg')->with('u',$user);
+    }
+
+    public function post_edit_jamb_reg(Request $request)
+    {
+        $old_jamb_reg = $request->input('old_jamb_reg');
+        $new_jamb_reg = $request->input('jamb_reg');
+        $id = $request->input('id');
+        
+       
+        if($new_jamb_reg != $old_jamb_reg)
+        {
+        $this->validate($request,array('jamb_reg' => 'bail|required|unique:mysql2.users',));
+        }
+        $user = User::on('mysql2')->find($id);
+        $old_jamb_reg  = $user->jamb_reg;
+        $user->jamb_reg = $new_jamb_reg;
+        $user->password = bcrypt($user->matric_number);
+        $user->save();
+        Session::flash('success',"SUCCESSFUL");
+        return back();
+    }
+
+
+
 
     public function edit_profile($id)
     {
@@ -143,7 +179,7 @@ or matric number exist already.contact system ADMIN");
         $user->email = strtolower($email);
         $user->gender= $request->gender;
         $user->save();
-        Session::flash('success',"SUCCESSFULL");
+        Session::flash('success',"SUCCESSFUL");
         return back();
     }
 
@@ -153,7 +189,7 @@ or matric number exist already.contact system ADMIN");
       $u =DB::connection('mysql2')->table('users')
             ->where('id', $request->user_id)
             ->update(['faculty_id' =>$request->faculty_id,'department_id' => $request->department_id,'fos_id' => $request->fos_id]);
-            Session::flash('success',"SUCCESSFULL");
+            Session::flash('success',"SUCCESSFUL");
             return back();
     }
 
@@ -162,7 +198,7 @@ or matric number exist already.contact system ADMIN");
     $user = User::on('mysql2')->find($id);
     $user->password =Hash::make($user->matric_number);
     $user->save();
-    Session::flash('success',"SUCCESSFULL. the new password is the mattric number");
+    Session::flash('success',"SUCCESSFUL");
     return back();
    // return view('general.edit.profile')->with('u',$user);
     }
@@ -203,7 +239,7 @@ public function updateCorrectionName(Request $request){
     $user->firstname = strtoupper($firstname);
     $user->othername = strtoupper($othername);
     $user->save();
-    Session::flash('success',"SUCCESSFULL");
+    Session::flash('success',"SUCCESSFUL");
     return back();
 }
 
@@ -295,5 +331,148 @@ return $pdf->setPaper('a4', 'landscape')->stream('admin.admin_courseRegStudents3
       
     return view('admin.admin_courseRegStudents')->with('u',$users)->with('d',$dd)->with('l',$l)->with('s',$s)->with('sm',$semester)->with('p',$program);
     }*/
+}
+public function enableResultDepartment()
+{
+    $fc = Faculty::orderBy('faculty_name', 'ASC')->get();
+return view('general.enableResultDepartment.index')->with('fc',$fc);
+}
+public function postEnableResultDepartment(Request $request)
+{
+    $fc = Faculty::orderBy('faculty_name', 'ASC')->get();
+    $ra =ResultActivation::where('status',1)->first();
+    $dd = Department::where('faculty_id',$request->faculty)->orderBy('department_name', 'ASC')->get();
+    return view('general.enableResultDepartment.index')->with('fc',$fc)->with('ra',$ra)->with('d',$dd);
+}
+
+public function updateEnableResultDepartment(Request $request)
+{
+    $session=$request->session;
+    $id =$request->id;
+    $data =array();
+
+    if($id==null){
+        Session::flash('warning',"please select Department");
+        return back(); 
+    }
+    if($session==null){
+        Session::flash('warning',"please select session");
+        return back(); 
+    }
+
+    foreach($session as $s){
+        foreach($id as $v){
+        $check=EnableResultUpload::where([['department_id',$v],['session',$s]])->first();
+        if($check == null){
+        $data[]=['department_id'=>$v,'session'=>$s];
+        }
+        }
+    }
+
+if(count($data) >0){
+    DB::table('enable_result_uploads')->insert($data);
+    Session::flash('success',"Successful");
+        return back(); 
+}else{
+    Session::flash('warning',"Department is already active");
+        return back(); 
+}
+   
+  
+}
+
+public function viewEnableResultDepartment()
+{
+$g=EnableResultUpload::get()->groupBy('department_id');
+$d=EnableResultUpload::select('department_id')->distinct()->get();
+$department=Department::whereIn('id',$d)->get();
+$data =array();
+
+foreach($department as $v)
+{
+$data[$v->id] = ['name'=>$v->department_name];
+}
+return view('general.enableResultDepartment.view')->with('g',$g)->with('d',$data);
+}
+public function reverseEnableResultDepartment(Request $request)
+{
+$del =EnableResultUpload::whereIn('department_id',$request->id)->delete();
+Session::flash('success',"Successful");
+return back(); 
+}
+//==================================enable old result upload
+public function enableResultDepartmentOld()
+{
+    $f = DB::connection('oldporta')->table('faculties')->orderBy('faculties_name', 'ASC')->get();
+    return view('general.enableResultDepartmentOld.index')->with('fc',$f);
+  
+}
+
+public function updateEnableResultDepartmentOld(Request $request)
+{
+  
+    $id =$request->id;
+   
+
+    if($id==null){
+        Session::flash('warning',"please select Department");
+        return back(); 
+    }
+ 
+$data=array();
+
+        $check=DB::connection('oldporta')->table('enable_result_uploads')->where('department_id',$id)->first();
+
+        if($check == null){
+        $data[]=['department_id'=>$id];
+        }
+ 
+if(count($data) >0){
+    DB::connection('oldporta')->table('enable_result_uploads')->insert($data);
+    Session::flash('success',"Successful");
+        return back(); 
+}else{
+    Session::flash('warning',"Department is already active");
+        return back(); 
+}
+   
+  
+}
+
+public function viewEnableResultDepartmentOld()
+{
+$check=DB::connection('oldporta')->table('enable_result_uploads')->get();
+
+
+$data =array();
+
+foreach($check as $v)
+{
+$data[] = $v->department_id;
+}
+$department=DB::connection('oldporta')->table('departments')->whereIn('departments_id',$data)->get();
+return view('general.enableResultDepartmentOld.view')->with('d',$department);
+}
+public function reverseEnableResultDepartmentOld(Request $request)
+{
+$del =DB::connection('oldporta')->table('enable_result_uploads')->whereIn('department_id',$request->id)->delete();
+Session::flash('success',"Successful");
+return back(); 
+}
+
+public function changeJambRegToPassword($entry_year)
+{
+    $user =DB::connection('mysql2')->table('users')
+    ->where([['entry_year',$entry_year],['entry_month','!=',5]])->get();
+
+    foreach($user->chunk(500) as $items){
+    foreach($items as $v)
+    {DB::connection('mysql2')->table('users')
+    ->where('id', $v->id)
+    ->update(['password' =>Hash::make(strtoupper($v->matric_number)),'entry_month'=>5]);
+   }
+}
+  die('success');
+    return back();
 }
 }

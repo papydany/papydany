@@ -19,6 +19,7 @@ use App\Models\RegisterCourse;
 use App\Exports\RegisterCourseExport;
 use App\Models\Course;
 use App\Models\CourseReg;
+use App\Models\StudentReg;
 use App\Models\AssignCourse;
 use App\Models\StudentResultBackup;
 use GuzzleHttp\Client;
@@ -90,7 +91,7 @@ for ($i = 0; $i <=$request->number; $i++) {
 
  
     }
-       Session::flash('success',"SUCCESSFULL.");
+       Session::flash('success',"SUCCESSFUL.");
     	return view('support.get_create_pin');
 
     }
@@ -200,7 +201,7 @@ return view('support.pin.convert');
 }
     }
    //dd();
-    $request->session()->flash('success', ' SUCCESSFULL');
+    $request->session()->flash('success', ' SUCCESSFUL');
  return redirect()->action([SupportController::class,'convert_pin']);
  }
  //================== export pin =========================================
@@ -264,7 +265,7 @@ return view('support.pin.convert');
         $pin =Pin::find($request->id);
         if($pin == null){
       $request->session()->flash('warning', 'serial number does not exist');
-
+      return back();
         }else{
           $role =$this->g_rolename(Auth::user()->id);
           if($role == 'Deskofficer')
@@ -276,19 +277,11 @@ return view('support.pin.convert');
               $request->session()->flash('warning', 'you can only reset pin of students in these department');
               return back();
              }
-             $pinnumber =Pin::where('student_id',Auth::user()->id)->count();
-
-             if(Auth::user()->entry_year == '2016' &&  $pinnumber <= 4 )
-             {return back();
-
-             }elseif(Auth::user()->entry_year == '2017' &&  $pinnumber <= 3){
-            }
-            elseif(Auth::user()->entry_year == '2018' &&  $pinnumber <= 3){
-
-            
-          }elseif(Auth::user()->entry_year == '2019' &&  $pinnumber == 1){
-
-          }
+             if($pin->log1 == 1 && $pin->log2 == 1){
+             $request->session()->flash('warning', 'The pin has been used for both semester registration');
+             return back();
+             }
+             
           }
         
         $pin->status = 0;
@@ -299,7 +292,7 @@ return view('support.pin.convert');
         $pin->log2 = 0;
         $pin->session= $request->session;
         $pin->save();
-    $request->session()->flash('success', ' SUCCESSFULL');
+    $request->session()->flash('success', ' SUCCESSFUL');
         }
  return back();
       }
@@ -452,7 +445,7 @@ public function postApproveResult(Request $request)
     ->where([['user_id',$v],['session',$request->session],['level_id',$request->level],['season',$request->season]])
     ->update(['approved' => $updateValue,'approved_date'=>$date]);
     }
-    $request->session()->flash('success', ' SUCCESSFULL');
+    $request->session()->flash('success', ' SUCCESSFUL');
   }
   return view('support.dvc.approveResult.index');
 }
@@ -465,6 +458,20 @@ public function setupGraduate()
 
 public function postSetupGraduate(Request $request)
 {
+  $rev=$request->rev;
+
+  if($rev != null){
+    if($request->rv == null){
+      $request->session()->flash('warning', ' no student selected for reverse');
+    }else{
+      foreach($request->rv as $v)
+      {
+      DB::connection('mysql2')->table('users')->where('id',$v)
+      ->update(['date_of_graduation' =>'','year_of_graduation'=>'','graduation_status'=>0]);
+      }
+      $request->session()->flash('success', ' SUCCESSFUL');
+    }
+  }else{
   $gd=$request->gd;
   $y =substr($gd,0,4);
   if($request->graduate == null){
@@ -475,9 +482,10 @@ public function postSetupGraduate(Request $request)
     DB::connection('mysql2')->table('users')->where('id',$v)
     ->update(['date_of_graduation' => $gd,'year_of_graduation'=>$y,'graduation_status'=>1]);
     }
-    $request->session()->flash('success', ' SUCCESSFULL');
+    $request->session()->flash('success', ' SUCCESSFUL');
   }
-  return view('support.dvc.setupGraduate.index');
+}
+  return back();//view('support.dvc.setupGraduate.index');
 }
 
 public function viewGraduate()
@@ -523,7 +531,11 @@ public function postoldportalViewGraduate(Request $request)
 public function individualResult(Request $request)
     {
             $u = DB::connection('mysql2')->table('users')->where('matric_number',$request->matric_number)->first();
-
+if($u == Null)
+{
+  Session::flash('warning',"Matric Number does not exist.");
+  return back();
+}
             $studentDetails = DB::connection('mysql2')->table('student_regs')
                     ->join('course_regs', 'course_regs.studentreg_id', '=', 'student_regs.id')
                     ->leftjoin('student_results', 'course_regs.id', '=', 'student_results.coursereg_id')
@@ -532,7 +544,7 @@ public function individualResult(Request $request)
                     ->orderBy('student_regs.session','ASC')
                     ->orderBy('course_regs.semester_id', 'ASC')
                     ->orderBy('course_regs.course_code', 'ASC')
-                   ->select('course_regs.*','student_results.ca','student_results.exam','student_results.total')
+                   ->select('course_regs.*','student_results.ca','student_results.exam','student_results.total','student_results.approved')
                     ->get()
                     ->groupBy('session');
                    return view('support.individualResult.index')->with('s',$studentDetails)->with('u',$u);
@@ -549,54 +561,8 @@ public function individualResult(Request $request)
       return view('support.admin_classAttendance.index')->with('f',$fos)->with('fc',$f)->with('p',$p);
     }
 
-    public function changeTFCtoTMS(){
-      $c =DB::table('courses')->where('course_code');
-    }
 
-    //========================== solve business management isses===
-
-    /*function updateRegisterCourseTable()
-    {
-      $fos =7;
-      $dfos=720;
-    
-      $r=RegisterCourse::where([['fos_id',$fos],['reg_course_status','G']])
-      ->whereIn('session',['2018','2019'])
-      ->whereIn('level_id',[2,3])->get();
-      foreach($r as $v){
-        $check=RegisterCourse::where([['course_id',$v->course_id],['fos_id',$dfos],['reg_course_status','G'],['session',$v->session],['level_id',$v->level_id]])
-      ->first();
-      if($check == null){
-        $data[] =['course_id'=>$v->course_id,'programme_id'=>$v->programme_id,'department_id'=>$v->department_id,'faculty_id'=>$v->faculty_id,'fos_id'=>$dfos,'specialization_id'=>0,'level_id'=>$v->level_id,'semester_id'=>$v->semester_id,'reg_course_title'=>$v->reg_course_title,'reg_course_code'=>$v->reg_course_code,'reg_course_unit'=>$v->reg_course_unit,'reg_course_status'=>"G",'session'=>$v->session];
-  
-      }
-      }
-      if(!empty($data)) 
-      {
-      DB::table('register_courses')->insert($data);
-      echo'success';
-    }else{
-      echo'no insert';
-    }
-    }*/
-
-    public function autoAssignCourse()
-    {
-      $data =array();
-      $reg=RegisterCourse::where([['reg_course_code','like', '%GSS%'],['session','2019']])->get();
-      foreach($reg as $v){
-        $assign_course = AssignCourse::where([['registercourse_id', $v->id], ['user_id',2459]])->first();
-        if($assign_course == null){
-
-      $data[] = ['registercourse_id' => $v->id, 'user_id' => 2459, 'department_id' => $v->department_id, 'faculty_id' => $v->faculty_id, 'fos_id' => $v->fos_id, 'level_id' => $v->level_id, 'session' => $v->session, 'semester_id' => $v->semester_id];
-
-      }
-    }
-
-      DB::table('assign_courses')->insert($data);
-dd('success');
-      
-    }
+ 
   
     public function updateCourse()
     {
@@ -650,7 +616,7 @@ dd('success');
     
       $ccc=DB::table('courses')->select('course_code', (DB::raw('COUNT(course_code)')))
       ->groupBy('course_code')
-      ->havingRaw('COUNT(course_code)  >1')
+      ->havingRaw('COUNT(course_code) >1')
       ->get();
       foreach($ccc as $d)
       {
@@ -670,10 +636,34 @@ dd('success');
 
     }
 
+public function updateCourse4($id)
+{
+  $t =Course::find($id);
+  RegisterCourse::where('course_id',$id)->update(['reg_course_code'=>$t->course_code]);
+  CourseReg::where('course_id',$id)->update(['course_code'=>$t->course_code]);
+echo'success';
+}
 
+public function updateCourse5()
+{
+  $reg=array();
+  $re=RegisterCourse::get();
+  foreach($re as $v){
+    $c =Course::find($v->course_id);
+    if($c==NULL)
+    {
+      $reg[]=$v->id;
+    }
+  }
+  $cr =CourseReg::wherein('registercourse_id',$reg)->get();
+  foreach($cr as $v)
+  {
+    echo $v->course_code.'-'.$v->id.'-'.$v->session.'<br/>';
+  }
+}
     public function updateCourse3()
     {
-      $cc=['ECO111'];
+      $cc=['EDM131'];
      
       foreach($cc as $c){
        /* $job = (new \App\Jobs\UpdateCourse())
@@ -688,6 +678,9 @@ dd('success');
       
      // $c=$cc->course_code;
       $t =Course::where('course_code',$c)->orderBy('id','ASC')->first();
+      if($t == null){
+        dd('does not exist');
+      }
       $id =$t->id;
       RegisterCourse::where('reg_course_code',$c)->update(['course_id'=>$id]);
       CourseReg::where('course_code',$c)->update(['course_id'=>$id]);
@@ -697,7 +690,7 @@ dd('success');
       StudentResultBackup::where('coursereg_id',$v->id)->update(['course_id'=>$id]);
       }
      
-      DB::table('courses')->where([['course_code',$c],['id','!=',$id]])->delete();
+     // DB::table('courses')->where([['course_code',$c],['id','!=',$id]])->delete();
     }
 
       dd('success'.' '.$c);
@@ -816,7 +809,7 @@ Excel::import(new StudentsImport($request->all()),$path);
   dd($errors);
 }
 
-Session::flash('success', "SUCCESSFULL.");
+Session::flash('success', "SUCCESSFUL.");
   return back();
    }
 }
@@ -850,7 +843,6 @@ public function reverseGrade($examofficer)
 public function displayResultTable()
 {
   $r=StudentResult::where('updated_at','!=',null)->paginate(10000);
-  dd($r);
   return view('support.displayResultTable.index')->with('r',$r);
 }
 public function firstClassStudent()
@@ -888,5 +880,86 @@ public function postfirstClassStudent(Request $request)
 
 //https://serversforhackers.com/laravel-perf
 
+public function usr()
+{
+  $cr=CourseReg::where('lateReg',1)->select('studentreg_id')->distinct()->get();
+  foreach($cr as $v){
+$vId[]=$v->studentreg_id;
+  }
+ 
+  StudentReg::where('id',$vId)->update(['lateReg' =>1]);   
+}
+// update student reg and course reg column of fos id
+public function usrcr()
+{
+  DB::connection('mysql2')->table('users')->chunkById(1000, function ($u) {
+ 
+  foreach($u as $v){
+    $checkReg=StudentReg::where([['user_id',$v->id],['fos_id',Null]])->get();
+    if(count($checkReg) != 0)
+    {
+      DB::connection('mysql2')->table('student_regs')->where('user_id',$v->id)->update(['fos_id'=>$v->fos_id]);
+    }
+  }
+});
+  dd('success');
+}
 
+public function probationSt()
+{
+  //$normal1=array();
+  $normal=array();
+  $prob =DB::connection('mysql2')->table('student_regs')
+  ->where([['semester',2],['level_id',4],['session','2019'],['moppedUp',null],['season','NORMAL']])->get();
+  if(count($prob) > 0){
+  foreach ($prob as $key => $value) {
+  $normal []=$value->user_id;
+  }
+}
+$prob_Student_reg =DB::connection('mysql2')->table('student_regs')
+->whereIntegerInRaw('user_id',$normal)
+->where([['moppedUp',null],['season','NORMAL'],['level_id',4],['session','2020'],['semester',2]])->get();
+if(count($prob_Student_reg) > 0){
+foreach ($prob_Student_reg as $key => $value) {
+//$normal1 []=['id'=>$value->id,'user_id'=>$value->user_id];
+CourseReg::where([['user_id',$value->user_id],['semester_id',2],['session','2020'],['level_id',4],['period','NORMAL']])->update(['studentreg_id'=>$value->id]);
+}
+//dd($normal1);
+}
+
+
+}
+public function duplicateName(){
+
+  $u =DB::connection('mysql2')->table('users')
+  ->select('surname', (DB::raw('COUNT(surname)')))
+ // ->whereColumn('firstname','firstname')
+//->whereColumn('othername','othername')
+  ->groupBy('surname')
+  ->havingRaw('COUNT(surname)  > 1')
+  ->get();
+ 
+  if(count($u) == 0){
+    dd('success');
+  }
+  foreach($u as $k=>$t){
+    foreach($t as $v)
+    {
+      $u2 =DB::connection('mysql2')->table('users')->where('surname',$v)
+      ->select('firstname', (DB::raw('COUNT(firstname)')))
+       ->groupBy('firstname')
+       ->havingRaw('COUNT(firstname)  > 1')
+       ->get();
+       if(count($u2) != 0){
+        foreach($u2 as $k=>$t2){
+          foreach($t2 as $v2)
+          {
+echo $v.' -'.$v2.'<br/>';
+          }
+        }
+      }
+    }
+    //echo $v->matric_number.' '.$v->surname.''.$v->firstname.''.$v->othername;
+  }
+}
 }

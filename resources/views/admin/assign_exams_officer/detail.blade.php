@@ -66,9 +66,24 @@
                      
                         </table>
  
-
+                        <div class="col-sm-5">
+                                @if(isset($fos))
+                                @if(count($fos) > 0)
+                                <form class="form-horizontal" role="form" method="POST" action="{{ url('assign_exams_officer') }}" data-parsley-validate>
+                                {{ csrf_field() }}
+                                <input type="hidden" name="optradio" value="{{$id.'~'.$department_id}}">
+@foreach($fos as $v)
+                     
+                     <input type="checkbox" name="fos[]" value="{{$v->id}}"> &nbsp; {{$v->fos_name}} <br/>
+                     @endforeach
+                     <br/>
+                     <div class="col-sm-8">
+                     <input type="submit" class="btn btn-success btn-block" name="hod" value="Assign Exams Officer">
+             </div>
+                                </form>
+@endif
                         @endif
-                      
+                        @endif                   
                         </div>
                         </div>
                         </div>

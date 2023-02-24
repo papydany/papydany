@@ -113,7 +113,7 @@
                             </div>
                             <div class="col-sm-1">
                                 <label for="max" class="control-label">max Unit</label>
-                                <input type="text" name="max" class="form-control" required>
+                                <input type="text" name="max" class="form-control" max='28' required>
 
                                 @if ($errors->has('max'))
                                     <span class="help-block">

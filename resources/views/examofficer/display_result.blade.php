@@ -30,7 +30,7 @@
     <p>FACULTY: {{$faculty}}</p>
       <p>DEPARTMENT: {{$department}}</p>
       <p>PROGRAMME:  {{$fos}}</p>
- <p>LECTURER:  {{Auth::user()->title.'&nbsp;&nbsp;'.Auth::user()->name}}</p>
+ <p>LECTURER:  {{Auth::user()->title.' '.Auth::user()->name}}</p>
       </div>
   <div class="col-sm-3 ww">
       <p> <strong>Level : </strong>{{$l}}00 </p>
@@ -47,12 +47,13 @@
 </table>
 
             
-                       
+@foreach($u as $k => $items)           
                  <table class="table table-bordered table-striped">
+                  <tr><th colspan="8">{{$k}}00 Level  &nbsp; &nbsp;&nbsp;  @if($k > $l)CARRY OVER RESULT @endif </th></tr>
                  <tr>
                      
                         <th width="3%">S/N</th>
-                        <th width="17%">Martic Number</th>
+                        <th width="17%">Matriculation Number</th>
                         <th>Names</th>
                         <th width="7%">Script No</th>
                         <th width="5%">CA</th>
@@ -61,8 +62,8 @@
                         <th width="5%">Grade</th>
                           </tr>
                             {{!!$c = 0}}
-                      @foreach($u as $result)
-                    
+                      
+                      @foreach($items as $result)
                       {{!$c = ++$c}}
                       <tr>
                       
@@ -83,13 +84,13 @@
 {{isset($result->grade) ? $result->grade :''}}
                       </td>
                       </tr>
-                     
                       @endforeach
+                      
                   </table>
-
+                  @endforeach
 
                        @else
-                        <p class="alert alert-warning">No Register students  is avalable</p>
+                        <p class="alert alert-warning">No Register students  is available</p>
                         @endif
                         
   @endif

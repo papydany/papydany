@@ -53,7 +53,7 @@
                               <select class="form-control" name="session_id" required>
                               <option value=""> - - Select - -</option>
                                
-                                  @for ($year = (date('Y')); $year >= 2013; $year--)
+                                  @for ($year = Date('Y'); $year >= 2012; $year--)
                                   {{!$yearnext =$year+1}}
                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
                                   @endfor
@@ -156,7 +156,7 @@
                               <select class="form-control" name="session" required>
                               <option value=""> - - Select - -</option>
                                
-                                  @for ($year = (date('Y')); $year >= 2013; $year--)
+                                  @for ($year = date('Y'); $year >= 2012; $year--)
                                   {{!$yearnext =$year+1}}
                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
                                   @endfor

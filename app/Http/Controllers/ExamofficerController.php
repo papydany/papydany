@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ERSDownloadExport;
 use App\Exports\ERSDownLoadGssExport;
+use App\Exports\ERSDownLoadGssExportII;
 use App\Exports\ResultLoadGssExport;
 use App\Models\UpdateResult;
 use Barryvdh\DomPDF\Facade as PDF;
@@ -53,11 +54,12 @@ class ExamofficerController extends Controller
   $f =Auth::user()->faculty_id;
   $id=Auth::user()->id;
   $f_id = $this->get_fos_exams_officer_and_hod($id,$d,$p);
+  
   //$course = $this->getRegisterAssign_courses($id,$l,$semester,$session,$d,$f,$f_id);
   //$this->getRegisterAssign_courses_examsOfficer($id,$l,$semester,$session,$d,$f,$f_id);
   $course = $this->getRegisterAssign_courses($id,$l,$semester,$session,$d,$f,$f_id);
   //dd($course);
- return view('examofficer.eo_assign_courses')->with('c',$course)->with('sm',$semester)->with('s',$session)->with('l',$l)->with('fos',$f_id)->with('p',$p);
+ return view('examofficer.eo_assign_courses')->with('c',$course)->with('sm',$semester)->with('s',$session)->with('l',$l)->with('fos',$f_id)->with('p',$p)->with('med',Self::MEDICINE)->with('den',Self::DENTISTRY);
 
     }
 //---------------------------------------- get student  by course -----------------------------------
@@ -89,6 +91,7 @@ $faculty=Faculty::find($f);
           ->orderBy('users.matric_number', 'ASC')
           ->select('course_regs.*', 'users.firstname', 'users.surname', 'users.othername', 'users.matric_number', 'users.entry_year')
           ->get();*/
+        
       return view('examofficer.excelUpload.index')->with('f',$f)->with('c',$registercourse)->with('rt',$result_type)->with('med',self::MEDICINE)->with('period',$period);
 
   }elseif($request->excel =='download')
@@ -258,7 +261,7 @@ $update->ca = $ca;
          DB::connection('mysql2')->table('student_results')->insert($insert_data);
         }
     }
-        Session::flash('success',"SUCCESSFULL.");
+        Session::flash('success',"SUCCESSFUL.");
          return back();
       //  return redirect($url);
     }
@@ -296,20 +299,40 @@ return view('examofficer.view_result')->with('p',$p);
  public function display_result(Request $request)
  {
   
-   $c_id =$request->input('id');
-     $xc = explode('~', $c_id);
-    $id = $xc[0];
-     $f_id = $xc[1];
-      $course_code = $xc[2]; 
-   $p =$request->input('programme');
+  $c_id =$request->input('id');
+  $xc = explode('~', $c_id);
+  $id = $xc[0];
+  $f_id = $xc[1];
+  $course_code = $xc[2]; 
+  $p =$request->input('programme');
   $l =$request->input('level');
   $sm =$request->input('semester');
   $s =$request->input('session');
   $period =$request->input('period');
   $regCourse=RegisterCourse::find($id);
 
-$user= $this->registerStudentWithResultOrNot($id,$l,$sm,$s,$period);
+$user= $this->registerStudentWithResultOrNot($regCourse,$sm,$s,$period);
+
 if($request->sbc != null){
+  $seal=array(); $updateValue =2;$date =date('Y-m-d');
+  foreach($user as $items){
+ foreach($items as $v)
+ {
+  if($v->id != null)
+  {
+    $seal[]=[$v->id];
+  }
+}
+}
+
+  if(!empty($seal))
+  {
+    DB::connection('mysql2')
+    ->table('student_results')
+    ->whereIn('id',$seal)
+    ->update(['approved' => $updateValue,'approved_date'=>$date]);
+  }
+ 
   $data = ['u'=>$user,'l'=>$l,'s'=>$s,'sm'=>$sm,'course_code'=>$course_code,'f_id'=>$f_id,'reg'=>$regCourse];
   $pdf = PDF::loadview('examofficer.sbc.display_result',$data);
   return $pdf->setPaper('a4', 'landscape')->stream('examofficer.sbc.display_result.pdf');
@@ -424,7 +447,7 @@ $d =DB::connection('mysql2')->table('student_results')->where([['id',$id],['appr
 if($d == 0){
   Session::flash('warning',"you can not delete SBC approved result.");
 }else{
-Session::flash('success',"successfull.");
+Session::flash('success',"successful.");
 }
 return back();
 }
@@ -441,7 +464,7 @@ $d =DB::connection('mysql2')->table('student_results')->where('approved','!=',2)
 if($d == 0){
   Session::flash('warning',"you can not delete SBC approved result.");
 }else{
-Session::flash('success',"successfull.");
+Session::flash('success',"successful.");
 }
 return back();
 }
@@ -462,7 +485,7 @@ return back();
  {
  $role = session('key');//$this->g_rolename(Auth::user()->id);
  
- if($role->name =='examsofficer' || $role->name =='HOD')
+ if($role->name =='examsofficer' && $f == Self::MEDICINE || $role->name =='examsofficer' && $f ==Self::DENTISTRY || $role->name =='examsofficer' && $session < 2020 || $role->name =='HOD' && $session < 2020)
  {
   $first = DB::table('register_courses')
   ->where([['level_id',$l],['semester_id',$semester],['session',$session],['department_id',$d],['faculty_id',$f]])
@@ -504,15 +527,25 @@ return back();
         ->get();
         return $user;
  }
- public function registerStudentWithResultOrNot($reg_id,$l,$sm,$s,$period)
+ public function registerStudentWithResultOrNot($reg,$sm,$s,$period)
  {
+  $register_course =DB::table('register_courses')
+        ->where([['course_id',$reg->course_id],['department_id',$reg->department_id],['session',$reg->session],['fos_id',$reg->fos_id]])
+        ->get();
+        $register_course_id=array();
+        foreach($register_course as $v)
+        {
+        $register_course_id [] =$v->id;
+        }
   $user = DB::connection('mysql2')->table('users')
   ->join('course_regs', 'course_regs.user_id', '=', 'users.id')
   ->Leftjoin('student_results', 'course_regs.id', '=', 'student_results.coursereg_id')
-  ->where([['course_regs.registercourse_id',$reg_id],['course_regs.level_id',$l],['semester_id',$sm],['course_regs.session',$s],['period',$period]])
+  ->where([['semester_id',$sm],['course_regs.session',$s],['period',$period]])
+  ->whereIn('course_regs.registercourse_id',$register_course_id)
+  ->orderBy('course_regs.level_id','ASC')
   ->orderBy('users.matric_number','ASC')
-  ->select('users.firstname', 'users.surname','users.othername','users.matric_number','student_results.id','student_results.ca','student_results.exam','student_results.grade','student_results.total')
-  ->get();
+  ->select('users.firstname','course_regs.level_id','users.surname','users.othername','users.matric_number','student_results.id','student_results.ca','student_results.exam','student_results.grade','student_results.total','student_results.scriptNo')
+  ->get()->groupBy('level_id');
   return $user;
  }
 
@@ -604,7 +637,6 @@ public function get_fos_exams_officer_and_hod($id,$d,$p)
 public function lecturer_gss()
 {
  $p =$this->getp();
-
 return view('examofficer.gss.index')->with('p',$p);
 }
 
@@ -618,6 +650,7 @@ $session =$request->input('session');
 $d =Auth::user()->department_id;
 
 //$course=Course::where([['department_id',$d],['semester',$semester]])->get();
+if($request->cpd == 1){
 $course = DB::table('courses')
 ->join('register_courses', 'register_courses.course_id', '=', 'courses.id')
 ->join('departments', 'register_courses.department_id', '=', 'departments.id')
@@ -626,9 +659,18 @@ $course = DB::table('courses')
 ->select('register_courses.course_id','register_courses.department_id','register_courses.reg_course_code','departments.department_name')
 ->distinct('register_courses.course_id')
 ->get();
-
 return view('examofficer.gss.eo_assign_courses')->with('c',$course)->with('sm',$semester)->with('s',$session)->with('p',$p);
+}elseif($request->cpc == 1){
+  $course = DB::table('courses')
+  ->join('register_courses', 'register_courses.course_id', '=', 'courses.id')
+->where([['courses.department_id',$d],['register_courses.semester_id',$semester],['register_courses.session',$session]])
+  ->orderBy('reg_course_code','ASC')
+  ->select('register_courses.course_id','register_courses.reg_course_code')
+  ->distinct('register_courses.course_id')
+  ->get();
+  return view('examofficer.gss.eo_assign_coursesII')->with('c',$course)->with('sm',$semester)->with('s',$session)->with('p',$p);
 
+}
 }
 
 public  function eo_result_c_gss(Request $request)
@@ -659,6 +701,27 @@ return Excel::download(new ERSDownLoadGssExport($request->all(),$course_id,$d,$d
 
 }  
 
+
+public  function eo_result_c_gssII(Request $request)
+{  
+$course_id =$request->input('id');
+$result_type =$request->input('result_type');  
+$s =$request->input('session'); 
+$period =$request->input('period'); 
+$course =Course::find($course_id);
+if($request->excel =='excel')
+{
+return view('examofficer.gss.excelUploadII')->with('s',$s)->with('c',$course)->with('rt',$result_type)->with('period',$period);
+}elseif($request->excel =='download')
+{
+
+$title=str_replace(' ', '',$course->course_code);
+
+return Excel::download(new ERSDownLoadGssExportII($request->all(), $course_id), $title.'.xlsx');
+}
+
+
+} 
 //--------------------------------------------view result --------------------------------------------------
 public function v_result_gss()
 {
@@ -719,5 +782,9 @@ $user= $this->registerStudentWithResultOrNotGss($course_id,$sm,$s,$period,$d);
  return view('examofficer.gss.display_result')->with('course_title',$course_title)->with('d',$d)->with('u',$user)->with('sm',$sm)->with('s',$s)->with('f',$f)->with('course_code',$course_code);
 }
 //==============================end =============================
+
+
+
+
     
 }

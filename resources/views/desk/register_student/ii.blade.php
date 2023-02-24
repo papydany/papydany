@@ -8,7 +8,8 @@
 //$result= session('key');
 $role =$r->getroleId(Auth::user()->id); 
 
-$acct =$r->getResultActivation($role); ?>
+$acct =$r->getResultActivation($role);
+$eru =$r->getEnableResultUpload(Auth::user()->department_id); ?>
 <div class="row">
     <div class="col-lg-12">
         
@@ -49,17 +50,26 @@ $acct =$r->getResultActivation($role); ?>
                             <select class="form-control" name="session_id" required>
                                 <option value=""> - - Select - -</option>
                                 @for ($year = (date('Y')); $year >= 2009; $year--)
-                                {{!$yearnext =$year+1}}
+                                {{!$yearNext =$year+1}}
                                  @if($acct != null && $acct >= $year)
                                  @if($acct >= $year && Auth::user()->faculty_id == $med || $acct >= $year && Auth::user()->faculty_id == $den)
                                   
-                                  <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
+                                  <option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+                                  @elseif(count($eru) != 0)
+
+                                   
+@foreach($eru as $eruValue)
+@if($year == $eruValue->session)
+
+<option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+@endif
+@endforeach
                                   @else
                                   <option value="">Session Deactivated</option>
                                   @endif
 
                                  @else
-                                 <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
+                                 <option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
                                  @endif
                                 
                                 @endfor
@@ -67,7 +77,26 @@ $acct =$r->getResultActivation($role); ?>
 
                         </div>
                         {{--    @if($result->name =="examsofficer")--}}
-        
+                        @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den)
+                        <div class="col-sm-3 col-md-2">
+                              <label for="level" class=" control-label">Level</label>
+                              <select class="form-control" name="level">
+                               <option value=""> - - Select - -</option>
+                               <option value="1">100</option>
+                            <option value="2">200</option>
+                            <option value="3">Part I</option>
+                            <option value="4">Part II</option>
+                            <option value="5">Part III</option>
+                            <option value="6">Part IV</option>
+                          
+                                
+                              </select>
+                             
+                            </div>
+                            
+                            
+
+                        @else
                             <div class="col-sm-3 col-md-2">
                                 <label for="level" class=" control-label">Level</label>
                                 <select class="form-control" name="level">
@@ -84,6 +113,7 @@ $acct =$r->getResultActivation($role); ?>
                                 </select>
     
                             </div>
+                            @endif
                             {{--    @else
 
                  
@@ -105,11 +135,15 @@ $acct =$r->getResultActivation($role); ?>
                             <select class="form-control" name="season">
                                 <option value=""> - - Select - -</option>
                                 <option value="NORMAL">NORMAL</option>
+                                @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den)
+                                <option value="VACATION">RESIT</option>
+                                @else
                                  @if(Auth::user()->programme_id == 2)
                                 <option value="RESIT">RESIT</option>
                                 @else
                                 <option value="VACATION">VACATION</option>
 
+                                @endif
                                 @endif
 
                             </select>
@@ -165,6 +199,8 @@ $acct =$r->getResultActivation($role); ?>
                             <td>{{$v->surname." ".$v->firstname." ".$v->othername}}</td>
                             
                          <td>
+                         @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den
+ || $ss < 2020)
                                 <a href="{{url('registered_student_detail',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-primary btn-xs" target="_blank">Enter Result</a>
                         
                                | <a href="{{url('registered_student_detail_update',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-warning btn-xs" target="_blank">Update Result</a>
@@ -173,15 +209,38 @@ $acct =$r->getResultActivation($role); ?>
 
                                | <a href="{{url('registered_student_detail_update_any',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-success btn-xs" target="_blank">Update Any Result</a>
                         
+               @else
+              <?php $isMopUp =$r->isMopUpStudent($v->id); ?>
+              @if($isMopUp == null)
+               <a href="#" type="button" disabled class="btn btn-primary btn-xs">Enter Result</a>
                         
+                               | <a href="#" type="button"  disabled class="btn btn-warning btn-xs">Update Result</a>
+                                
+                               | <a href="{{url('registered_student_detail_delete',[$v->id,$l_id,$ss,$season])}}" type="button"  class="btn btn-danger btn-xs">Delete Result</a>
+
+                               | <a href="#" type="button" disabled class="btn btn-success btn-xs">Update Any Result</a>
+                        
+               @else
+               <a href="{{url('registered_student_detail',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-primary btn-xs" target="_blank">Enter Result</a>
+                        
+                        | <a href="{{url('registered_student_detail_update',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-warning btn-xs" target="_blank">Update Result</a>
+                         
+                        | <a href="{{url('registered_student_detail_delete',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-danger btn-xs" target="_blank">Delete Result</a>
+
+                        | <a href="{{url('registered_student_detail_update_any',[$v->id,$l_id,$ss,$season])}}" type="button" class="btn btn-success btn-xs" target="_blank">Update Any Result</a>
+                 
+
+               @endif
+               @endif
                             </td>
                         </tr>
+                     
                         @endforeach
                 </table>
 
   @else
                     <div class=" col-sm-10 col-sm-offset-1 alert alert-warning" role="alert" >
-                        No Student  is avalable!!!
+                        No Student  is available!!!
                     </div>
 
                 @endif

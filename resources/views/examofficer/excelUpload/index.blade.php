@@ -45,7 +45,6 @@
                   <span class="text-center text-success"><strong>Result Type :</strong>&nbsp;{{$rt}}</span></div>
                 <div class="panel-body">
              
-                <h4 class="text-danger">NB : The excel sheet must carry the header title as indicated below and also its should not be more than 100 students per sheet for now</h4>
                    
                       <form class="form-horizontal" role="form" method="POST" enctype="multipart/form-data" action="{{ url('excel_insert_result') }}" data-parsley-validate>
                    
@@ -55,6 +54,8 @@
                         <input type="hidden" name="registeredCourseId" value="{{$c->id}}">
                         <input type="hidden" name="course_id" value="{{$c->course_id}}">
                         <input type="hidden" name="faculty_id" value="{{$f}}">
+                        <input type="hidden" name="department_id" value="{{$c->department_id}}">
+                        <input type="hidden" name="fos_id" value="{{$c->fos_id}}">
                         <input type="hidden" name="period" value="{{$period}}">
                         <input type="hidden" name="session" value="{{$c->session}}">
                         <input type="hidden" name="level" value="{{$c->level_id}}">

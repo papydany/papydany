@@ -180,7 +180,7 @@ foreach ($allcheck as $value) {
         {
 		DB::connection('mysql2')->table('pds_results')->insert($data);
 	}}
-Session::flash('success',"SUCCESSFULL.");
+Session::flash('success',"SUCCESSFUL.");
 return redirect($url);
 	}
   //-----------------------------------------------------------------------------------------------

@@ -142,10 +142,12 @@
                         </div>
                     </form>
                     @else
-
+                    <form class="form-horizontal" role="form" method="POST" action="{{ url('transferStudents') }}" data-parsley-validate>
+                        {{ csrf_field() }}
                         <table class="table table-bordered table-striped">
                             <tr>
                                 <th>S/N</th>
+                                <th>Select</th>
                                 <th>Matric Number</th>
                                 <th>jamb_reg</th>
                                 <th>Name</th>
@@ -158,11 +160,12 @@
                             @foreach($u as $v)
                                 <tr>
                                     <td>{{++$c}}</td>
+                                    <td><input type="checkbox" name="id[]" value="{{$v->id}}"/></td>
                                     <td>{{$v->matric_number}}</td>
                                     <td>{{$v->jamb_reg}}</td>
                                     <td>{{$v->surname." ".$v->firstname." ".$v->othername}}</td>
                                     <td>{{$v->phone}}</td>
-                                    <td>{{$v->gender}}</td>
+                                    
                                     <td><a href="{{url('view_student_detail',$v->id)}}" class="btn btn-success">
                                         Detail</a>|
                                         <a href="{{url('correctionName',$v->id)}}" class="btn btn-primary">
@@ -171,7 +174,77 @@
                                 </tr>
                             @endforeach
                         </table>
-                    
+                        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading">Transfer  Student To New Department</div>
+                <div class="panel-body">
+                   
+                        <div class="form-group{{ $errors->has('department_name') ? ' has-error' : '' }}">
+                        
+                               <div class="col-sm-3">
+                              <label for="session" class=" control-label">Session</label>
+                              <select class="form-control" name="session" required>
+                              <option value=""> - - Select - -</option>
+                               
+                                  @for ($year = (date('Y')); $year >= 2016; $year--)
+                                  {{!$yearnext =$year+1}}
+                                  <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
+                                  @endfor
+                                
+                              </select>
+                             
+                            </div>
+                            <div class="col-sm-3">
+                              <label for="session" class="control-label">Faculty</label>
+                              <select class="form-control" name="faculty" id="faculty_id2" required>
+                              <option value=""> - - Select - -</option>
+                               
+                                  @foreach ($faculty as $v)
+                                 
+                                  <option value="{{$v->id}}">{{$v->faculty_name}}</option>
+                                  @endforeach
+                                
+                              </select>
+                             
+                            </div>
+                              <div class="col-sm-3">
+                              <label for="session" class="control-label">Department</label>
+                              <select class="form-control" name="department" id="department_id2" required>
+                              
+                               
+                                
+                              </select>
+                             
+                            </div>
+                            <div class="col-sm-3">
+                              <label for="fos" class="control-label">Field Of Study</label>
+                              <select class="form-control" name="fos" id="fos_id2" required>
+                            
+                                
+                              </select>
+                             
+                            </div>
+
+                          
+                      
+                            
+
+                            <div class="col-md-2">
+                            <br/>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-btn fa-user"></i>Transfer Students
+                                </button>
+                            </div>
+                            <div class="col-sm-2">
+                            <br/>
+                            <input type="submit" class="btn btn-success" value="Transfer With Result" name="TWR" disabled
+                            />
+                        </div>
+
+                        </div>
+
+                        </form>
+                </div></div></div>
                         @endif
 
                     @else
@@ -189,3 +262,7 @@
 
 @endsection
 
+@section('script')
+<script src="{{URL::to('js/main.js')}}"></script>
+
+@endsection

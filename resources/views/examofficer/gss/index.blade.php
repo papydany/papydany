@@ -70,7 +70,7 @@ $acct =$r->getResultActivation($role); ?>
                              
                             </div>
                         
-                          <div class="col-sm-3">
+                          <div class="col-sm-2">
                               <label for="semester" class=" control-label">Semester</label>
                               <select class="form-control" name="semester"  required>
                                   <option value=""> - - Select - -</option>
@@ -82,8 +82,14 @@ $acct =$r->getResultActivation($role); ?>
                             
                               <div class="col-sm-2">
                                  <br/>
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fa fa-btn fa-user"></i> Continue
+                                <button type="submit" class="btn btn-danger" name="cpd" value="1">
+                                    <i class="fa fa-btn fa-user"></i> Continue Per Department
+                                </button>
+                            </div>
+                            <div class="col-sm-2">
+                                 <br/>
+                                <button type="submit" class="btn btn-primary" name="cpc" value="1">
+                                    <i class="fa fa-btn fa-user"></i> Continue per Course
                                 </button>
                             </div>
                             </div>

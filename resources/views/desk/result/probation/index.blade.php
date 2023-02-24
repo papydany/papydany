@@ -3,10 +3,13 @@
 @section('content')
 @inject('r','App\Models\R')
         <!-- Page Heading -->
-<?php $result= session('key');
+<?php 
+use Illuminate\Support\Facades\Auth;
+$result= session('key');
  $role =$r->getroleId(Auth::user()->id); 
 
-$acct =$r->getResultActivation($role); ?>
+$acct =$r->getResultActivation($role);
+$eru =$r->getEnableResultUpload(Auth::user()->department_id); ?>
 
 <div class="row">
     <div class="col-lg-12">
@@ -35,19 +38,30 @@ $acct =$r->getResultActivation($role); ?>
         
                                     
                                         @for ($year = (date('Y')); $year >= 2016; $year--)
-                                  {{!$yearnext =$year+1}}
-                                   @if($acct != null)
-                                   @if($acct >= $year )
+                                  {{!$yearNext =$year+1}}
+                                   @if($acct != null && $acct >= $year)
+                                 
+                                   
+                                   @if(count($eru) != 0)
+
+                                   
+@foreach($eru as $eruValue)
+@if($year == $eruValue->session)
+
+<option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+@endif
+@endforeach
+@else
                                    <option value="">Session Deactivated</option>
                                    
-                                   @else
-                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
-                                   @endif
-
-                                   @else
-                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
                                    @endif
                                   
+                                   
+
+                                   @else
+                                   <option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+                                   @endif
+                               
                                   @endfor
                                     </select>
         

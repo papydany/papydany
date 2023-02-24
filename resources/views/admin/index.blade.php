@@ -56,6 +56,34 @@
 @endif
       <?php $result=session('key'); //session('key'); 
       ?>
+  @if($result->name =="lecturer")
+  @if($mopUp != 0)
+  <div class='row'>
+  <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-tasks fa-2x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"></div>
+                                        <div>Mop Up Registered Students</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{url('moppedUpRegisteredStudents')}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+  </div>
+  @endif
+  @endif 
 @if($result->name =="DVC")
 <!--<div class="row">
 <div class="col-sm-4">
@@ -361,7 +389,6 @@
 
                         </form>
   </div>
-  @if($result->name =="support")
   <div class="col-sm-4">
            <form class="form-horizontal" role="form" method="GET" target="_blank" action="{{ url('individualResult') }}" data-parsley-validate>
                       {{ csrf_field() }}
@@ -383,7 +410,7 @@
                             <div class="col-md-12">
                             <br/>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-btn fa-user"></i> View Result
+                                    <i class="fa fa-btn fa-user"></i> View Courses & Result
                                 </button>
                             </div>
 
@@ -391,6 +418,8 @@
 
                         </form>
   </div>
+  @if($result->name =="support")
+
 
   <div class="col-sm-4">
            <form class="form-horizontal" role="form" method="POST"  action="{{ url('studentImport') }}" enctype="multipart/form-data">
@@ -816,7 +845,28 @@
                             </a>
                         </div>
                     </div>
-
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-tasks fa-2x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"></div>
+                                        <div>Class Attendance II</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{url('registeredCoursesToStudentsII')}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                     
                 </div>
                 @endif
@@ -1040,6 +1090,28 @@
                             </a>
                         </div>
                     </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-tasks fa-2x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"></div>
+                                        <div>Class Attendance II</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{url('registeredCoursesToStudentsII')}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
            
                 </div>
 
@@ -1062,6 +1134,28 @@
                             </div>
                             <!--<a href="{{url('registeredcourse')}}">-->
                             <a href="{{url('adminreg_course')}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-tasks fa-2x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"></div>
+                                        <div>Class Attendance II</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{url('registeredCoursesToStudentsII')}}">
                                 <div class="panel-footer">
                                     <span class="pull-left">View Details</span>
                                     <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -1164,8 +1258,36 @@
                             </a>
                         </div>
                     </div>
+
+                
                     
                 </div>
+                @endif
+                <!-- gss faculty ----->
+                @if(Auth::user()->faculty_id == 29)
+                <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-tasks fa-2x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge"></div>
+                                        <div>Mop Up Registered Students</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{url('moppedUpRegisteredStudents')}}">
+                                <div class="panel-footer">
+                                    <span class="pull-left">View Details</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
                 @endif
 </div>
 

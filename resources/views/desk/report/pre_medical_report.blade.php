@@ -108,12 +108,7 @@ if( $final != '' ){
 $set['class'] = array(0=>'', 1=>'', 2=>'');
 }
 $set['bottom'] = '<p style="margin-left:0px">
-              <span>_______________________</span>
-              <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(HEAD OF DEPT)</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ...............................................</span>
-            </p>
-            <p> 
+          
               <span>______________________________</span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px"></span>
@@ -121,9 +116,9 @@ $set['bottom'] = '<p style="margin-left:0px">
               <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: .............................................................</span>
             </p>
             <p> 
-              <span>_______________________</span>
+              <span>__________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(EXTERNAL EXAMINER)</span>
+              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(PROVOST)</span>
               <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ..................................................</span>
             </p>
             

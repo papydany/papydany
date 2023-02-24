@@ -368,6 +368,8 @@ $elective_grade2 = $R->fetch_electives($v->id,$s,$l,2,$season,$electiveSql2);
 @if(substr($remark,0,4) == 'PASS')
 @if($v->graduation_status == 1)
 <input type="checkbox" name="" value="" checked disabled />
+<input type="checkbox" name="rv[]" value="{{$v->id}}" />
+RV
 @else
 <input type="checkbox" name="graduate[]" class="ids" value="{{$v->id}}" />
 @endif
@@ -540,16 +542,20 @@ for($i=0; $i<$k; $i++) {
   </div>
   @elseif($approval == 2)
   <div class="col-sm-12" style="border:2px solid #000; padding:4px" >
-  <div class="col-sm-4 col-sm-offset-1">
+  <div class="col-sm-3">
     <label for="birthday">Senate Approved Date</label>
   <input type="date" id="birthday" name="gd" class="form-control" required>
   </div>
-  <div class="col-sm-4 col-sm-offset-1"> 
+  <div class="col-sm-3 col-sm-offset-1"> 
   <button class="btn btn-primary ">Graduate Student</button>
+  </div>
+  <div class="col-sm-3"> 
+  <button class="btn btn-danger" name="rev" value="rev">Reverse Graduate Student</button>
+  </div>
 
   </form>
   </div>
-  </div>
+ 
   @endif
     
 @if($approval == 0)

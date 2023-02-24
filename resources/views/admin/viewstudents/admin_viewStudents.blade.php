@@ -185,7 +185,7 @@
 
                     @else
                  
-                          <form class="form-horizontal" role="form" method="POST" action="{{ url('/tranferStudents') }}" data-parsley-validate>
+                          <form class="form-horizontal" role="form" method="POST" action="{{ url('/transferStudents') }}" data-parsley-validate>
                         {{ csrf_field() }}
 
                           <table class="table table-bordered table-striped">
@@ -201,6 +201,7 @@
                             </tr>
                              {{!!$c = 0}}
                        @foreach($u as $v)
+
                        <tr>
                       
                        <td>{{++$c}}</td>

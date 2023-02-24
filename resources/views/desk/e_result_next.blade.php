@@ -71,10 +71,16 @@
                       </div>
                       
                          <div class="form-group ">
- 
+                         @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den
+ || $s_id < 2020)
                         <button type="submit" class="btn btn-danger">
                                     Continue To Enter Result
                                 </button>
+                                @else
+                                <button type="submit" disabled class="btn btn-danger btn-sm">
+                                    <i class="fa fa-btn fa-user"></i>Disabled from 2020 Session
+                                </button> 
+                                @endif
                              &nbsp;&nbsp;&nbsp;&nbsp;
                                
                                  <button type="submit" name="excel" value="excel" class="btn btn-primary">
@@ -89,7 +95,7 @@
                                 </form>
 
                        @else
-                        <p class="alert alert-warning">No Course is avalable</p>
+                        <p class="alert alert-warning">No Course is available</p>
                         @endif
                         @endif           
 

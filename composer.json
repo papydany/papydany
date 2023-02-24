@@ -13,6 +13,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
+        "petrobolos/fixed-array-functions": "^1.2",
         "queueworker/sansdaemon": "^1.2",
         "symfony/http-client": "^6.1",
         "symfony/mailgun-mailer": "^6.1",

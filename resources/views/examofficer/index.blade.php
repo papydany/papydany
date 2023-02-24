@@ -3,9 +3,11 @@
 @section('content')
 @inject('r','App\Models\R')
 
-<?php $role =$r->getroleId(Auth::user()->id); 
-
-$acct =$r->getResultActivation($role); ?>
+<?php 
+use Illuminate\Support\Facades\Auth;
+$role =$r->getroleId(Auth::user()->id); 
+$acct =$r->getResultActivation($role); 
+$eru =$r->getEnableResultUpload(Auth::user()->department_id);?>
                 <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
@@ -29,6 +31,7 @@ $acct =$r->getResultActivation($role); ?>
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/eo_assign_courses') }}" data-parsley-validate>
                         {{ csrf_field() }}
                         <div class="form-group">
+                   
                      <div class="col-sm-2">
                               <label for="programme" class=" control-label">Programme</label>
                               <select class="form-control" name="programme" id="programme_id" required>
@@ -51,17 +54,26 @@ $acct =$r->getResultActivation($role); ?>
                               <option value=""> - - Select - -</option>
                                
                                   @for ($year = (date('Y')); $year >= 2009; $year--)
-                                  {{!$yearnext =$year+1}}
+                                  {{!$yearNext =$year+1}}
                                    @if($acct != null &&  $acct >= $year)
                                    @if($acct >= $year && Auth::user()->faculty_id == $med || $acct >= $year && Auth::user()->faculty_id == $den)
                                   
-                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
+                                   <option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+                                   @elseif(count($eru) != 0)
+
+                                   
+@foreach($eru as $eruValue)
+@if($year == $eruValue->session)
+
+<option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
+@endif
+@endforeach
                                    @else
                                    <option value="">Session Deactivated</option>
                                    @endif
 
                                    @else
-                                   <option value="{{$year}}">{{$year.'/'.$yearnext}}</option>
+                                   <option value="{{$year}}">{{$year.'/'.$yearNext}}</option>
                                    @endif
                                   
                                   @endfor
@@ -71,14 +83,26 @@ $acct =$r->getResultActivation($role); ?>
                             </div>
                               <div class="col-sm-3">
                               <label for="semester" class=" control-label">Level</label>
+                              @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den)
+                      
+                              <select class="form-control" name="level">
+                               <option value=""> - - Select - -</option>
+                               <option value="1">100</option>
+                            <option value="2">200</option>
+                            <option value="3">Part I</option>
+                            <option value="4">Part II</option>
+                            <option value="5">Part III</option>
+                            <option value="6">Part IV</option>
+                          </select>
+                             
+                          @else
                               <select class="form-control" name="level" id="level_id"  required>
                                   <option value=""> - - Select - -</option>
-                                 
-                               
-                                 
-                              </select>
+                                 </select>
+                                 @endif
                              
                             </div>
+                      
                           <div class="col-sm-3">
                               <label for="semester" class=" control-label">Semester</label>
                               <select class="form-control" name="semester" id="semester_id"  required>
@@ -87,6 +111,7 @@ $acct =$r->getResultActivation($role); ?>
                               </select>
                              
                             </div>
+                          
                             
                               <div class="col-sm-2">
                                  <br/>

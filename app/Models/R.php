@@ -321,6 +321,7 @@ function getStudentResult($course_id,$courseRegList=null,$resultWhereInCourseId=
   ->where([['user_id',$id],['session',$s],['season',$season]])
   ->whereIn('course_id',$course_id)->get();*/
  
+  //if(count($resultWhereInCourseId) > 0)
   if(count($resultWhereInCourseId) > 0)
   {
     foreach ($resultWhereInCourseId as $key => $value ) {
@@ -425,13 +426,81 @@ if(count($coursereg) > 0)
    
     }
   } 
+
+  $nocoursereg =DB::connection('mysql2')->table('course_regs')->whereIn('registercourse_id',$reg_id)
+->where([['user_id',$id],['session',$s],['period',$season],['level_id',$l],['semester_id',$sem],['course_status','E']])
+->whereNotIn('id', function($query) use ($id,$l,$s,$sem,$season) {
+  $query->select('coursereg_id')->from('student_results')->where([['user_id',$id],['level_id',$l],['semester',$sem],['session',$s],['season',$season]]);
+})->get();
+if(count($nocoursereg) > 0)
+  {
+  foreach ($nocoursereg as $key => $value2) {
+ $elec .= $value2->course_unit.' '.substr_replace($reg_course_id[$value2->course_id]['code'], '',3,0)."<br/>";
+  }
+  }
+   
 }
   return $elec;
 }
 
+function fetch_electives2($id, $s,$l,$sem,$season,$sql,$status) {
+  $elec = '';
+  $reg_id =array();$reg_course_id=array();
+  //dd($sql);
+  if(count($sql) > 0)
+  {
+     foreach ($sql as $key => $value) {
+   $reg_course_id [$value->course_id] =['course_id'=>$value->course_id,'code'=>$value->reg_course_code];
+   $reg_id [] =$value->id;
+  }
+  
+ 
+ $coursereg =DB::connection('mysql2')->table('student_results')
+ ->where([['user_id',$id],['session',$s],['season',$season],['level_id',$l],['semester',$sem]])
+ ->whereIn('coursereg_id', function($query) use ($id,$l,$s,$sem,$season,$reg_id,$status) {
+   $query->select('id')->from('course_regs')->whereIn('registercourse_id',$reg_id)
+   ->where([['user_id',$id],['level_id',$l],['semester_id',$sem],['session',$s],['course_status',$status],['period',$season]]);
+ })->get();
+ 
+ if(count($coursereg) > 0)
+   {
+   foreach ($coursereg as $key => $value1) {
+  //$grade = $this->getSingleResult($id,$s,$l,$sem,$season,$value->course_id);
+   if($value1->approved == 2)
+   {
+     $elec .= $value1->cu.' '.substr_replace($reg_course_id[$value1->course_id]['code'], '',3,0).' <span style="color:red">'.$value1->grade."</span><br/>";
+   }else{
+     $elec .= $value1->cu.' '.substr_replace($reg_course_id[$value1->course_id]['code'], '',3,0).' '.$value1->grade."<br/>";
+   }
+     
+    
+     }
+   } 
+ 
+   $nocoursereg =DB::connection('mysql2')->table('course_regs')->whereIn('registercourse_id',$reg_id)
+ ->where([['user_id',$id],['session',$s],['period',$season],['level_id',$l],['semester_id',$sem],['course_status',$status]])
+ ->whereNotIn('id', function($query) use ($id,$l,$s,$sem,$season) {
+   $query->select('coursereg_id')->from('student_results')->where([['user_id',$id],['level_id',$l],['semester',$sem],['session',$s],['season',$season]]);
+ })->get();
+ 
+ if(count($nocoursereg) > 0)
+   {
+   foreach ($nocoursereg as $key => $value2) {
+  $elec .= $value2->course_unit.' '.substr_replace($reg_course_id[$value2->course_id]['code'], '',3,0)."<br/>";
+   }
+   }
+    
+ }
+   return $elec;
+ }
 
-
-
+ public function register_course_elective2($fos_id,$l,$s,$sem,$status)
+ {
+   $sql =DB::table('register_courses')
+   ->where([['fos_id',$fos_id],['level_id',$l],['session',$s],['reg_course_status',$status],['semester_id',$sem]])
+   ->get();
+   return $sql;
+ }
 
 //------------------------------------gpa for a session ---------------------------------
 
@@ -526,6 +595,21 @@ public function getCourseWithResult($id,$s,$l,$season)
   }
   return $courseId;
 }
+
+public function getCourseWithResultAll($id)
+{
+  $courseId=array();
+
+    $s_result =DB::connection('mysql2')->table('student_results')
+    ->where('user_id',$id)->get();
+  if(count($s_result) > 0){
+  foreach($s_result as $v)
+  {
+    $courseId[]=$v->course_id;
+}
+  }
+  return $courseId;
+}
 // get result single
 //---------------------------------------------------------------------------------------------------------
 private function getSingleResult($id,$s,$l,$sem,$season,$course_id)
@@ -565,7 +649,7 @@ return $return =['number_of_F'=>count($check),'sum_of_F'=>$check->sum('cu')];
 }
 //------------------------ remarks -----------------------------------------
 
-  function result_check_pass_sessional($l,$id,$s,$cgpa,$taketype='',$fos='',$f='',$sum_of_F='',$resultObject='',$query='',$totalElective='',
+  function result_check_pass_sessional($l,$id,$s,$cgpa,$taketype='',$fos=null,$f='',$sum_of_F='',$resultObject='',$query='',$totalElective='',
   $passedVacationCourseId='')
 { 
   $fail=array();$carryf ='';$rept=''; $course_id_array =array();$pass_course_id=array();
@@ -672,7 +756,7 @@ if(in_array($v->course_id,$course_id_array))
 }*/
 //}
 
-  $take =  $this->take_courses_sessional($id, $l, $s,$taketype,$resultObject,$query,$totalElective);
+  $take =  $this->take_courses_sessional($id, $l, $s,$taketype,$resultObject,$query,$totalElective,$fos->id);
   
 
   if($s == '2018' && $chekvac == 'VACATION' && $f==8)
@@ -704,7 +788,7 @@ if(in_array($v->course_id,$course_id_array))
 
 //=======================premedical remarks =======================================
 
-function preMedicalRemarks($l,$id,$s,$cgpa,$take_ignore=false,$resultObject='',$query='',$fos='')
+function preMedicalRemarks($l,$id,$s,$cgpa,$take_ignore=false,$resultObject='',$query='',$fos=null)
 { $fail=array();$rept=''; $course_id_array =array();$pass_course_id=array();
   
   if($fos->duration == 5){}else{
@@ -751,7 +835,7 @@ foreach($coursereg as $k =>$v)
 
 }
 
-  $take = $take_ignore == true ? '' : $this->take_courses_sessional($id, $l, $s,'NORMAL',$resultObject,$query);
+  $take = $take_ignore == true ? '' : $this->take_courses_sessional($id, $l, $s,'NORMAL',$resultObject,$query,$fos->id);
  
   $rept = $rept != '' ? '<b>RPT : </b>'. substr($rept,2) : '';
   $rept = $take != '' ? '<b>TAKE : </b>'. $take ."<br>".$rept : $rept;
@@ -768,7 +852,14 @@ foreach($coursereg as $k =>$v)
 
 function clinicalRemarks($l,$id,$s,$season)
 { $fail=array();$rept=''; $coursereg_id_array =array();
-  // student who have apassed  all courses
+  $noResult =DB::connection('mysql2')->table('student_results')
+  ->where([['user_id',$id],['session',$s],['level_id',$l],['season',$season]])
+  ->get();
+  if(count($noResult) == 0 )
+  {
+    return '<b>NO Result</b>';
+  }else{
+  // student who have passed  all courses
   $check =DB::connection('mysql2')->table('student_results')
   ->where([['user_id',$id],['session',$s],['level_id',$l],['season',$season]])
   ->whereIn('grade',['P','PD'])
@@ -777,15 +868,14 @@ function clinicalRemarks($l,$id,$s,$season)
  if (count($check) == 0){ // found failed courses in the level
   $check =DB::connection('mysql2')->table('student_results')
   ->where([['user_id',$id],['session',$s],['level_id',$l],['season',$season]])
-  ->whereIn('grade',['P','PD'])
   ->select('total')->get();
   $totalFailed =$check->sum('total');
-  
+ 
   if($l == 3 && $totalFailed < 120)
   {
     return '<b>Change Of Programme</b>';
   }else{
-    return 'Resit All Courses';
+    return 'Repeat the year';
   }
  }
  
@@ -814,6 +904,7 @@ $rept ='RESIT '.$rept;
  }else{
    $rept ='PASS';
  }
+}
 return $rept;
 
 }
@@ -918,14 +1009,16 @@ if($l >= $duration->duration)
 
 //------------------------ probation remarks -----------------------------------------
 
-  function result_check_pass_probational($l,$id,$s,$cgpa,$fos)
-{ $fail=''; $pass='';$c=0;$carryf ='';$rept='';
+  function result_check_pass_probational($l,$id,$s,$cgpa,$fos,$result)
+{ $fail=''; $pass='';$c=0;$carryf ='';$rept='';$take='';
   
 $new_prob=$this->withdrawer_condition_for_probation($l,$id,$s,$cgpa);
 
   if($new_prob==true){
     return $new_prob;
   }
+  $take =$this->take_courses_sessional($id,$l,$s,'PROBATION',$result); 
+  //var_dump($take);
   $check =StudentResult::where([['user_id',$id],['session',$s],['level_id',$l]])->get()->COUNT();
 
   if($check != 0){
@@ -983,11 +1076,12 @@ if ($n >= 3)
 
  // $take = take_courses_sessional($id, $l, $s, $taketype='');
   //$rept = $carryf == $rept? '': $rept;
+  
   $carryf = $carryf != '' ? 'CARRY F '.substr($carryf,2)."<br>" : '';
   $rept = $rept != '' ? 'RPT '. substr($rept,2) : '';
   $rept = $rept;
   $dur = $fos->duration;
-  
+  $rept = $take != '' ? '<b>TAKE</b> '. $take ."<br>".$rept : $rept;
   if (($l >= $dur) && ($rept == '')) {
     $fail = "PASS <br>".$carryf;
   } else if (($carryf != '') && ($rept != '')) {
@@ -1048,8 +1142,15 @@ public function registerCompulsaryCoursesNotInResultQuery($fos_id,$l,$s)
   ->get();
   return $sql;
 }
-
-public function take_courses_sessional($id,$l,$s,$taketype='',$result='',$query='',$totalElective ='') 
+public function registerCompulsaryCoursesNotInResultQuerySpecialization($fos_id,$l,$s,$sFos)
+{
+  $r = DB::table('register_courses')
+  ->join('register_specializations', 'register_specializations.registercourse_id', '=', 'register_courses.id')
+  ->where([ ['register_courses.fos_id', $fos_id], ['level_id', $l], ['session', $s], ['reg_course_status','C'],['register_specializations.specialization_id',$sFos]])
+  ->orderBy('reg_course_code', 'ASC')->select('register_courses.*')->get();
+  return $r;
+}
+public function take_courses_sessional($id,$l,$s,$taketype='',$result=array(),$query='',$totalElective ='',$fos_id=null) 
 {
   $take = '';
   $regcos_array = array();
@@ -1120,8 +1221,35 @@ $sql =DB::table('register_courses')->whereIn('id',$regcos_array)->get();
        }
       }
       }
-     
-   // }
+
+      // ==================addition code 18/12/22==============
+      // to check for any compulsary courses that the student have not take in previous session
+    if($l != 1){
+    $srArraySession=array(); $srArrayLevel=array();
+    $allResult =$this->getCourseWithResultAll($id);
+      $studentReg=StudentReg::where([['user_id',$id],['session','<',$s],['level_id','<',$l]])
+      ->select('session','level_id')->distinct()->get();
+      if(count($studentReg) > 0)
+      {
+        foreach($studentReg as $sv){
+//$srArraySession[] =$sv->session;
+ 
+      $r = DB::table('register_courses')
+       ->where([ ['register_courses.fos_id', $fos_id],['reg_course_status','C'],['level_id',$sv->level_id],['session',$sv->session]])
+      ->orderBy('reg_course_code', 'ASC')->select('reg_course_code','course_id')->distinct()->get();
+    
+      
+if(count($r) >0){
+      foreach ($r as $key => $value) {
+        
+        if(!in_array($value->course_id,$allResult)){
+             $take.= ', '.substr($value->reg_course_code,0,3).' '.substr($value->reg_course_code,3,4);
+       }
+     }
+}
+        }
+      }
+    }
 
  
   return $take != '' ? substr($take,2) : '';
@@ -1577,7 +1705,7 @@ $course =DB::connection('mysql2')->table('course_regs')
 
 //======================================= getFailedDropCourseResult Probation========================
 
-function getFailedDropCourseResultProbation($id,$l,$s,$semester,$season) {
+function getFailedDropCourseResultProbation($id,$l,$s,$semester,$season,) {
   //var_dump($rpt_list);
   $to_go = array();
   $return = '';
@@ -1586,9 +1714,9 @@ function getFailedDropCourseResultProbation($id,$l,$s,$semester,$season) {
 ->join('student_results', 'course_regs.id', '=', 'student_results.coursereg_id')
 ->where([['course_regs.user_id',$id],['course_regs.level_id',$l],['course_regs.session',$s],['course_regs.period',$season],['course_regs.semester_id',$semester]])
 ->whereIn('course_regs.course_status',['R','D'])
-->whereNotIn('course_regs.course_id', function($query) use ($l,$s) {
+->whereNotIn('course_regs.course_id', function($query) use ($l,$s,$id) {
   $query->select('course_id')->from('unical8_exams2.course_regs')
-  ->where([['level_id',$l],['session',$s],['course_status','C']]);
+  ->where([['level_id',$l],['session','<',$s],['course_status','C'],['user_id',$id]]);
 })
 ->select('cu','grade','course_code')
 ->get();
@@ -1598,9 +1726,9 @@ $course =DB::connection('mysql2')->table('course_regs')
 ->join('student_results', 'course_regs.id', '=', 'student_results.coursereg_id')
 ->where([['course_regs.user_id',$id],['course_regs.level_id',$l],['course_regs.session',$s],['course_regs.period',$season],['course_regs.semester_id',$semester]])
 ->whereIn('course_regs.course_status',['R','D'])
-->whereNotIn('course_regs.course_id', function($query) use ($l,$s) {
+->whereNotIn('course_regs.course_id', function($query) use ($l,$s,$id) {
   $query->select('course_id')->from('unical_exams2.course_regs')
-  ->where([['level_id',$l],['session',$s],['course_status','C']]);
+  ->where([['level_id',$l],['session','<',$s],['course_status','C'],['user_id',$id]]);
 })
 ->select('cu','grade','course_code')
 ->get();
@@ -2155,6 +2283,11 @@ return $u;
  public function state($id){
   $s =State::find($id);
   return $s;
+ }
+ public function isMopUpStudent($id)
+ {
+  $sr=StudentReg::where([['moppedUp',1],['user_id',$id]])->first();
+  return $sr;
  }
      
 }	

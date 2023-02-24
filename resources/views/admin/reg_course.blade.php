@@ -193,7 +193,7 @@
   </ul>
 </div>
 @endif
-<p><a type="button" href="{{url('classAttendance',[$v->id,$g_s,$dd,$fos,$g_l,$v->semester_id])}}" target="_blank"  class="btn btn-success btn-xs"> Class Attendance </a>
+<p><a type="button" href="{{url('classAttendance',[$v->id,$g_s,$dd,$fos,$v->semester_id])}}" target="_blank"  class="btn btn-success btn-xs"> Class Attendance </a>
 | </p>
 <p><a type="button" href="{{url('mopUpClassAttendance',[$v->id,$g_s,$dd,$fos,$g_l,$v->semester_id])}}" target="_blank"  class="btn btn-primary btn-xs">Mop Exams Attendance </a>
 </p>

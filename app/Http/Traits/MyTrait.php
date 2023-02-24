@@ -9,6 +9,7 @@ use App\Models\Level;
 use App\Models\Fos;
 use App\Models\Semester;
 use App\Models\Department;
+use App\Models\EnableResultUpload;
 use App\Models\StudentResult;
 use App\Models\RegisterCourse;
 use Illuminate\Support\Facades\Auth;
@@ -209,7 +210,7 @@ return $sql;
   $prob_user_id = array(); $normal=array();
   
 $prob_Student_reg =DB::connection('mysql2')->table('student_regs')
-->where([['semester',1],['programme_id',$p],['department_id',$d],['faculty_id',$f],['level_id',$l],['session',$s]])->get();
+->where([['semester',1],['programme_id',$p],['department_id',$d],['faculty_id',$f],['level_id',$l],['session',$s],['moppedUp',null],['season','NORMAL']])->get();
 if(count($prob_Student_reg) > 0){
 foreach ($prob_Student_reg as $key => $value) {
 $normal []=$value->user_id;
@@ -225,6 +226,8 @@ $normal []=$value->user_id;
 }
 return $prob_user_id;
  }
+
+
 
 
  public function probationStudent($id,$l,$season)
@@ -269,7 +272,7 @@ public function student_with_result($course_id,$fos,$s,$semester,$period)
     ->join('course_regs', 'course_regs.id', '=', 'student_results.coursereg_id')
     ->join('users', 'users.id', '=', 'course_regs.user_id')
     ->where([['course_regs.course_id',$course_id],['student_results.session',$s],['student_results.semester',$semester],['student_results.season',$period]])
-    ->where('fos_id',$fos)
+    ->where('users.fos_id',$fos)
     ->get();
     
     if(count($result) > 0){
@@ -305,7 +308,7 @@ if($perpage == 0){
            ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
            ->join('student_results', 'users.id', '=', 'student_results.user_id')
            ->where([['users.programme_id',$p],['users.department_id',$d],['users.faculty_id',$f],['users.fos_id',$fos],['student_results.level_id',$l],['student_results.session',$s],['student_results.flag',$flag]])
-           ->where([['student_regs.programme_id',$p],['student_regs.department_id',$d],['student_regs.faculty_id',$f],['users.fos_id',$fos],['student_regs.level_id',$l],['student_regs.session',$s]])
+           ->where([['student_regs.programme_id',$p],['student_regs.department_id',$d],['student_regs.faculty_id',$f],['users.fos_id',$fos],['student_regs.level_id',$l],['student_regs.session',$s],['student_regs.moppedUp',null]])
            ->whereNotIn('users.id',$prob_user_id)
          //  ->whereIn('users.id',$correctional_array)
            ->orderBy('users.matric_number','ASC')
@@ -317,7 +320,7 @@ if($perpage == 0){
   ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
   ->join('student_results', 'users.id', '=', 'student_results.user_id')
   ->where([['users.programme_id',$p],['users.department_id',$d],['users.faculty_id',$f],['users.fos_id',$fos],['student_results.level_id',$l],['student_results.session',$s],['student_results.flag',$flag]])
-  ->where([['student_regs.programme_id',$p],['student_regs.department_id',$d],['student_regs.faculty_id',$f],['users.fos_id',$fos],['student_regs.level_id',$l],['student_regs.session',$s]])
+  ->where([['student_regs.programme_id',$p],['student_regs.department_id',$d],['student_regs.faculty_id',$f],['users.fos_id',$fos],['student_regs.level_id',$l],['student_regs.session',$s],['student_regs.moppedUp',null]])
   ->whereNotIn('users.id',$prob_user_id)
 //  ->whereIn('users.id',$correctional_array)
   ->orderBy('users.matric_number','ASC')
@@ -397,7 +400,12 @@ public function getTotalCourseUnitPerSemster($id,$session,$semester,$level,$seas
 }
  
 //========================== studentreg========================
-public function studentReg($id,$f,$d,$p,$l,$s,$s_id,$season){
+public function studentReg($id,$f,$d,$p,$l,$s,$s_id,$season,$fos){
+  if($s== 2020 || $s==2021){
+    $lateReg=1;
+  }else{
+    $lateReg=0;
+  }
   $newStudentReg = New StudentReg;
   $newStudentReg->user_id=$id;
   $newStudentReg->session=$s;
@@ -405,9 +413,11 @@ public function studentReg($id,$f,$d,$p,$l,$s,$s_id,$season){
   $newStudentReg->programme_id=$p;
   $newStudentReg->faculty_id=$f;
   $newStudentReg->department_id=$d;
+  $newStudentReg->fos_id=$fos;
   $newStudentReg->level_id=$l;
   $newStudentReg->season=$season;
   $newStudentReg->deskofficer=Auth::user()->id;
+  $newStudentReg->lateReg=$lateReg;
   $newStudentReg->save();
   return $newStudentReg->id;
 }
@@ -420,9 +430,13 @@ public function getRegisteredCourses1($l,$s,$s_id,$fos)
 return $rc; 
 }
 
-public function studentCourseReg($id,$studentreg_id,$rc,$l,$s,$s_id,$season)
+public function studentCourseReg($id,$studentreg_id,$rc,$l,$s,$s_id,$season,$fos)
 {$rcId=array(); $grcId=array(); $data=array();
-
+  if($s== 2020 || $s==2021){
+    $lateReg=1;
+  }else{
+    $lateReg=0;
+  }
 $grc =DB::connection('mysql2')->table('course_regs')
 ->where([['studentreg_id',$studentreg_id],['session',$s],['user_id',$id],['semester_id',$s_id],['level_id',$l],
 ['period',$season]])->get();
@@ -436,9 +450,9 @@ foreach($rc as $v)
   if(!in_array($v->id,$grcId))
   {
     $data[] =['studentreg_id'=>$studentreg_id,'registercourse_id'=>$v->id,
-    'user_id'=>$id,'level_id'=>$l,'semester_id'=>$s_id,'course_id'=>$v->course_id,'period'=>$season,
+    'user_id'=>$id,'level_id'=>$l,'fos_id'=>$fos,'semester_id'=>$s_id,'course_id'=>$v->course_id,'period'=>$season,
     'session'=>$s,'course_title'=>$v->reg_course_title,'course_code'=>$v->reg_course_code,
-    'course_status'=>$v->reg_course_status,'course_unit'=>$v->reg_course_unit];
+    'course_status'=>$v->reg_course_status,'course_unit'=>$v->reg_course_unit,'lateReg'=>$lateReg];
     
   }
   
@@ -450,9 +464,13 @@ return 1;
 return 2;
 }
 
-public function studentCourseRegWithStatus($id,$studentreg_id,$rc,$l,$s,$s_id,$season,$status)
+public function studentCourseRegWithStatus($id,$studentreg_id,$rc,$l,$s,$s_id,$season,$status,$fos)
 {$rcId=array(); $grcId=array(); $data=array();
-
+  if($s== 2020 || $s==2021){
+    $lateReg=1;
+  }else{
+    $lateReg=0;
+  }
 $grc =DB::connection('mysql2')->table('course_regs')
 ->where([['studentreg_id',$studentreg_id],['session',$s],['user_id',$id],['semester_id',$s_id],['level_id',$l],
 ['period',$season]])->get();
@@ -465,10 +483,10 @@ foreach($rc as $v)
 {
   if(!in_array($v->id,$grcId))
   {
-    $data[] =['studentreg_id'=>$studentreg_id,'registercourse_id'=>$v->id,
+    $data[] =['studentreg_id'=>$studentreg_id,'registercourse_id'=>$v->id,'fos_id'=>$fos,
     'user_id'=>$id,'level_id'=>$l,'semester_id'=>$s_id,'course_id'=>$v->course_id,'period'=>$season,
     'session'=>$s,'course_title'=>$v->reg_course_title,'course_code'=>$v->reg_course_code,
-    'course_status'=>$status,'course_unit'=>$v->reg_course_unit];
+    'course_status'=>$status,'course_unit'=>$v->reg_course_unit,'lateReg'=>$lateReg];
     
   }
   
@@ -926,7 +944,7 @@ public function get_school_status($MatricNumber,$Session)
 ]);
 //return $res;
   $responseBody = $res->getBody();*/
-  if($Session < 2015){
+  if($Session < 2016){
     return 'OK Proceed';
   }else{
   $next =$Session +1;
@@ -945,4 +963,124 @@ public function get_school_status($MatricNumber,$Session)
      
 }
 
+public function getEnableResultUpload($d){
+  $r =array();
+  $r =EnableResultUpload::where('department_id',$d)->get();
+  //if($r->count() > 0){
+    return $r;
+ 
+}
+
+//========================specialization code=====================
+public function getRegisteredCoursesSpecialization($p, $d, $f, $fos, $sFos, $l, $s, $sm, $sts)
+{
+   // $reg = DB::table('register_courses')
+   $spec=array();
+   $r = DB::table('register_courses')
+   ->join('register_specializations', 'register_specializations.registercourse_id', '=', 'register_courses.id')
+   ->where([['programme_id', $p], ['department_id', $d], ['faculty_id', $f], ['register_courses.fos_id', $fos], ['level_id', $l], ['session', $s], ['semester_id', $sm], ['reg_course_status', $sts],['register_specializations.specialization_id',$sFos]])
+   ->orderBy('reg_course_code', 'ASC')->select('register_courses.id')->get();
+   if (count($r) > 0) {
+      foreach($r as $v)
+      {
+      $spec[]=$v->id;
+      }
+    }
+    
+
+    $reg =RegisterCourse::where([['programme_id', $p], ['department_id', $d], ['faculty_id', $f], ['fos_id', $fos], ['level_id', $l], ['session', $s], ['semester_id', $sm], ['reg_course_status', $sts]])
+   ->whereIn('id',$spec)
+    ->orderBy('reg_course_code', 'ASC')
+    ->get();
+if (count($reg) > 0) {
+    return $reg;
+}
+return '';
+
+}
+
+public function getRegisteredStudentsSpecialization($p, $d, $f, $fos,$sFos, $l, $s,$perpage)
+    {
+        // get student that did probation
+        $prob_user_id = array();
+        $prob_user_id = $this->getprobationStudents($p, $d, $f, $l, $s);
+
+        if($perpage == 0){
+            $users = DB::connection('mysql2')->table('users')
+            ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
+              ->where([['users.programme_id',$p],['users.department_id',$d],['users.faculty_id',$f],['specialization_id',$sFos]])
+          ->where([['student_regs.programme_id', $p], ['student_regs.department_id', $d], ['student_regs.faculty_id', $f], ['users.fos_id', $fos], ['student_regs.level_id', $l], ['student_regs.session', $s]])
+            ->whereNotIn('users.id', $prob_user_id)
+              ->orderBy('users.matric_number', 'ASC')
+            ->distinct()
+            ->select('users.*')
+            ->get();
+
+        }else{
+        $users = DB::connection('mysql2')->table('users')
+            ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
+              ->where([['users.programme_id',$p],['users.department_id',$d],['users.faculty_id',$f],['specialization_id',$sFos]])
+           ->where([['student_regs.programme_id', $p], ['student_regs.department_id', $d], ['student_regs.faculty_id', $f], ['users.fos_id', $fos], ['student_regs.level_id', $l], ['student_regs.session', $s]])
+            ->whereNotIn('users.id', $prob_user_id)
+             ->orderBy('users.matric_number', 'ASC')
+            ->distinct()
+            ->select('users.*')
+            ->paginate($perpage)->withQueryString();
+        }
+
+        return $users;
+    }
+
+
+    //=================================== get mop up student====================
+    public function getMopUpStudents($p,$d,$f,$l,$s)
+    {
+       // get student that did probation
+     $s1 = $s-1;
+     $prob_user_id = array(); $normal=array();
+     
+   $prob_Student_reg =DB::connection('mysql2')->table('student_regs')
+   ->where([['semester',1],['programme_id',$p],['department_id',$d],['faculty_id',$f],['level_id',$l],['session',$s],['moppedUp',1]])->get();
+   if(count($prob_Student_reg) > 0){
+   foreach ($prob_Student_reg as $key => $value) {
+   $normal []=$value->user_id;
+   }
+    }
+    $u =DB::connection('mysql2')->table('student_regs')
+    ->where([['session','<=',$s1],['level_id',$l],['semester',1]])
+    ->whereIn('user_id',$normal)->get();
+    if($u->count() > 0){
+     foreach ($u as $key => $v) {   
+    $prob_user_id [] = $v->user_id;
+   }
+   }
+   return $prob_user_id;
+    }
+
+        // -------------- get register probation students for report ----------------------------------------
+        public function getRegisteredMopUpStudentsForReport($p,$d,$f,$fos,$l,$s,$perpage)
+        {
+            $prob_user_id = $this->getMopUpStudents($p, $d, $f, $l, $s);
+            if($perpage == 0){
+            $users = DB::connection('mysql2')->table('users')
+                ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
+                ->where([['student_regs.programme_id', $p], ['student_regs.department_id', $d], ['student_regs.faculty_id', $f], ['users.fos_id', $fos], ['student_regs.level_id', $l], ['student_regs.session', $s]])
+                ->whereIn('users.id', $prob_user_id)
+                ->orderBy('users.matric_number', 'ASC')
+                ->distinct()
+                ->select('users.*')
+                ->get();
+            }else{
+                $users = DB::connection('mysql2')->table('users')
+                ->join('student_regs', 'users.id', '=', 'student_regs.user_id')
+                ->where([['student_regs.programme_id', $p], ['student_regs.department_id', $d], ['student_regs.faculty_id', $f], ['users.fos_id', $fos], ['student_regs.level_id', $l], ['student_regs.session', $s]])
+                ->whereIn('users.id', $prob_user_id)
+                ->orderBy('users.matric_number', 'ASC')
+                ->distinct()
+                ->select('users.*')
+                ->paginate($perpage)->withQueryString();
+            }
+    
+            return $users;
+        }
 }

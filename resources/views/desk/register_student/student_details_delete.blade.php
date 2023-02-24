@@ -152,8 +152,10 @@ $fosName =$r->get_fos($u->fos_id) ?>
                                     </div>
                                     <div class="modal-footer">
                                             
-                                        <button type="submit" name="delete"  value="delete" class="btn btn-danger">delete Result</button>
+                                        <button type="submit" name="delete"  value="delete" class="btn btn-danger">delete Course & Result</button>
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <button type="submit" name="delete"  value="deleteResult" class="btn btn-primary">delete Only Result</button>
+                                    
  
                                     
                                 </div>

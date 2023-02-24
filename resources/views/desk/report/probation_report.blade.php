@@ -209,8 +209,8 @@ $no2 =$n2c + 2;
     $sizea = $n1c; //+ 1;
     $sizeb =  $n1c + 1 + $n2c + 1;
   
-    $k = (int)($n1c + $n2c)  +2; // additional 2 is for the two elective spaces
-   // dd($regc1);
+    $k = (int)($n1c + $n2c)+1 + 2; // additional 2 is for the two elective spaces
+   // dd($k);
 
     $list = array_merge( $regc1, array(1=>'elective'), array(1=>''), $regc2, array(1=>'elective') );
     
@@ -324,7 +324,7 @@ $no2 =$n2c + 2;
  <?php  
   $courseRegList =$R->courseRegList($v->id,$s,$season);
   $resultWhereInCourseId =$R->resultWhereInCourseId($v->id,$courseRegList,$s,$season);
-  //$courseWithResult =$R->getCourseWithResult($v->id,$s,$l,$season);
+  $courseWithResult =$R->getCourseWithResult($v->id,$s,$l,$season);
   
  //dd($season);
  $first_grade = $R->getStudentResult($course_id1,$courseRegList,$resultWhereInCourseId);
@@ -357,7 +357,7 @@ $repeat_course =$R->repeat_course($v->id,$s,$prob_level,$season,$s1,$passedVacat
 
 $cgpa =$R->get_cgpa($s,$v->id,$season);
 
-$remark = $R->result_check_pass_probational($l,$v->id,$s,$cgpa,$fos);
+$remark = $R->result_check_pass_probational($l,$v->id,$s,$cgpa,$fos,$courseWithResult);
 
  ?>
  <tbody>

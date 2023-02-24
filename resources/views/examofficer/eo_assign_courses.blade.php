@@ -64,8 +64,12 @@ $role =session('key'); ?>
                      <select class="form-control" name="period" required>
                      <option value="">-- select --</option>
                      <option value="NORMAL">NORMAL</option>
+                     @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den)
+                     <option value="VACATION">RESIT</option>
+                     @else
                      <option value="RESIT">RESIT (diploma)</option>
                      <option value="VACATION">VACATION</option>
+                     @endif
                     </select>
                       </div>
                            
@@ -83,10 +87,16 @@ $role =session('key'); ?>
                       
 
                          <div class="form-group ">
- 
+ @if(Auth::user()->faculty_id == $med || Auth::user()->faculty_id == $den
+ || $s < 2020)
                         <button type="submit" class="btn btn-danger btn-sm">
                                     <i class="fa fa-btn fa-user"></i> Continue
                                 </button>
+                                @else
+                                <button type="submit" disabled class="btn btn-danger btn-sm">
+                                    <i class="fa fa-btn fa-user"></i>Disabled from 2020 Session
+                                </button>  
+                                @endif
                                 &nbsp;&nbsp;
                                
                                 <button type="submit" name="excel" value="excel" class="btn btn-primary btn-sm">

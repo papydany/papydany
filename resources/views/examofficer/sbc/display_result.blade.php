@@ -319,8 +319,10 @@ header{
 
 <div class="row">
         <div class="col-sm-12">
-                       
+		@foreach($u as $k => $items)          
                  <table class="degree">
+				 <tr><th colspan="8">{{$k}}00 Level  &nbsp; &nbsp;&nbsp;  @if($k > $l)CARRY OVER RESULT @endif </th></tr>
+               
                  <tr>
                      
                         <th width="3%">S/N</th>
@@ -335,7 +337,7 @@ header{
                         <th width="5%">Grade</th>
                           </tr>
                             {{!!$c = 0}}
-                      @foreach($u as $result)
+                      @foreach($items as $result)
                     
                       {{!$c = ++$c}}
                       <tr>
@@ -363,9 +365,9 @@ header{
                       @endforeach
                   </table>
 
-
+				  @endforeach
                        @else
-                        <p class="alert alert-warning">No Register students  is avalable</p>
+                        <p class="alert alert-warning">No Register students  is available</p>
                         @endif
                         
   @endif

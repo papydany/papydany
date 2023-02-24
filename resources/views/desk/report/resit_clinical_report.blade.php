@@ -2,7 +2,7 @@
 @extends('layouts.display')
 @section('title','REPORT')
 @section('content')
-@inject('r','App\Models\R')
+@inject('R','App\Models\R')
 
 <style type="text/css">
 @media print,Screen{
@@ -81,28 +81,23 @@ $set['chr1'] = array(1=>'<th class="s9 text-center"></th>', 2=>'<th class="tB"><
 $set['plus'] = 1;
 $set['wrong_fix'] = '';
 
-$set['bottom'] = '<p style="margin-left:0px">
-              <span>_______________________</span>
-              <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(HEAD OF DEPT)</span>
-              <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ...............................................</span>
-            </p>
-            <p> 
-              <span>______________________________</span>
+$set['bottom'] = '<p style="margin-left:10px">
+         
+              <span>__________________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(DEAN OF '.strtoupper($fname).')</span>
               <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: .............................................................</span>
             </p>
             <p> 
-              <span>_______________________</span>
+              <span>__________________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
-              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(EXTERNAL EXAMINER)</span>
+              <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(PROVOST)</span>
               <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: ..................................................</span>
             </p>
             
             <p> 
-              <span>___________________________</span>
+              <span>_____________________________________________________</span>
               <span style="color:#000; padding-left:3px"></span>
               <span style="color:#000; padding-left:3px; font-size:10px;" class="B">(CHAIRMAN SBC)</span>
               <span style="color:#000; padding:20px 0 0 3px; font-size:10px;">DATE: .....................................................</span>
@@ -240,15 +235,21 @@ else
   ?> 
  @if(count($u) > 0)
   
-    
+  
   @foreach($u as $v)
   
 
  {{! $fullname = $v->surname.' '.$v->firstname.' '.$v->othername}}
  <?php  
- //dd($season);
-$first_grade = $R->getStudentResult($v->id,$course_id1,$s,'NORMAL');
-$resit_grade = $R->getStudentResult($v->id,$course_id1,$s,$season);
+  $courseRegListNormal =$R->courseRegList($v->id,$s,'NORMAL');
+  $resultWhereInCourseIdNormal =$R->resultWhereInCourseId($v->id,$courseRegListNormal,$s,'NORMAL');
+
+  $courseRegList =$R->courseRegList($v->id,$s,$season);
+  $resultWhereInCourseId =$R->resultWhereInCourseId($v->id,$courseRegList,$s,$season);
+
+ 
+$first_grade = $R->getStudentResult($course_id1,$courseRegListNormal,$resultWhereInCourseIdNormal);
+$resit_grade = $R->getStudentResult($course_id1,$courseRegList,$resultWhereInCourseId);
 $first_semester = empty($first_grade) ? array('') : $first_grade;
 $resit_semester = empty($resit_grade) ? array('') : $resit_grade;
 
@@ -374,10 +375,11 @@ for($i=0; $i<$k; $i++) {
   </div>
 
 
+
   <div class="sph block" style="margin-top:30px;"><?php echo $set['bottom'] ?>
 <div class='col-sm-12' style="text-align:center;">page {{$cpage}}</div>
 </div>   
-{{$u->setPath($url)->render()}}
+
 
    
 

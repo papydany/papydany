@@ -14,7 +14,7 @@ class ERSMopUpDownloadExport implements FromView,ShouldAutoSize,WithStyles
     /**
     * @return \Illuminate\Support\Collection
     */
-    private $user;
+    private $user,$id,$department_id,$faculty,$code,$department,$title,$s,$semester;
         
     public function __construct($id,$d,$code,$title,$semester,$department,$faculty)
     {
@@ -35,7 +35,7 @@ class ERSMopUpDownloadExport implements FromView,ShouldAutoSize,WithStyles
          ->select('course_regs.*', 'users.surname', 'users.firstname', 'users.othername', 'users.matric_number')
          ->orderBy('users.matric_number','ASC')
          ->get(); 
-         dd($this->user);
+        
        
     }
     public function styles(Worksheet $sheet)
